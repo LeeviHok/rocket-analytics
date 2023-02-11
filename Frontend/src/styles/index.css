@@ -1,0 +1,118 @@
+/*!
+ * Start Bootstrap - SB Admin 2 v4.1.4 (https://startbootstrap.com/theme/sb-admin-2)
+ * Copyright 2013-2021 Start Bootstrap
+ * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-sb-admin-2/blob/master/LICENSE)
+ */
+
+/*!
+ * Bootstrap v4.6.0 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+
+html, body, #root {
+  min-height: 100%;
+  height: 100%;
+}
+#page-wrapper {
+  display: flex;
+  height: 100%;
+}
+#main-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #f8f9fc;
+}
+#content {
+  flex-grow: 1;
+  padding-top: 2rem;
+}
+
+
+/* Vertical navbar */
+.navbar-vertical {
+  flex-direction: column;
+  min-width: 15rem;
+  padding: 0;
+  background-color: #4e73df;
+}
+.navbar-vertical .nav-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+}
+.navbar-vertical .nav-item .nav-link {
+  padding: 0;
+  font-size: 0.85rem;
+  color: rgba(220, 220, 220, 0.8);
+}
+.navbar-vertical .nav-item .nav-link.active {
+  color: white;
+}
+.navbar-vertical .nav-item .nav-icon {
+  margin-right: 0.5rem;
+}
+.navbar-vertical .nav-item.brand {
+  padding: 1.25rem 1rem;
+  font-weight: 500;
+}
+.navbar-vertical .nav-item.brand .nav-link {
+  font-size: 1.25rem;
+  color: #fff;
+}
+.navbar-vertical .nav-item.brand .nav-icon {
+  margin-right: 1rem;
+}
+.navbar-vertical hr.divider {
+  align-self: center;
+  width: 85%;
+  margin: 0 0 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+/* Vertical navbar */
+
+
+/* Horizontal navbar */
+.navbar-horizontal {
+  display: flex;
+  align-items: center;
+  height: 4.55rem;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 0.15rem 1.75rem 0 rgb(0 0 0 / 15%);
+  background-color: #fff;
+}
+.navbar-horizontal .nav-link {
+  padding: 0.25rem 1.5rem;
+  font-size: 0.85rem;
+  color: #858796;
+}
+.navbar-horizontal div.divider {
+  width: 0;
+  border-right: 1px solid #e3e6f0;
+  height: 85%;
+  margin-left: auto;
+  margin-right: 1rem;
+}
+/* Horizontal navbar */
+
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 3rem;
+  color: grey;
+  background-color: #fff;
+}
+/* Footer */
+
+
+/* MISC */
+span.small {
+  font-size: 80%;
+}
+/* MISC */
