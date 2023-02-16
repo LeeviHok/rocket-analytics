@@ -13,7 +13,7 @@ do attempt to automate the cloud configuration and deployment, this is unlikely
 to be a good solution for people who are not into software development. But
 this project might be a good starting point if you like to do things yourself.
 
-> &#128221; **Note** <br>
+> **Note** <br>
 > The project is in the early development stage. Many features are missing, and
 > existing features may be incomplete. Since there are currently no releases,
 > all software is in the development branch.
