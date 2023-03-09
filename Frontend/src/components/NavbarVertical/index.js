@@ -2,8 +2,8 @@ import { NavLink } from 'react-router-dom';
 
 import Nav from 'react-bootstrap/Nav';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartLine, faChartPie, faRocket } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartLine, faChartPie, faRocket } from '@fortawesome/free-solid-svg-icons';
 
 function NavbarVertical() {
   return (
