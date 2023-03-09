@@ -1,5 +1,4 @@
-from fastapi import Depends, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, Depends, FastAPI
 from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
@@ -7,19 +6,14 @@ from .database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+# Prefix for all endpoints and documentation
+API_PREFIX = '/api'
+DOCS_URL = f'{API_PREFIX}/docs'
+REDOC_URL = f'{API_PREFIX}/redoc'
+OPENAPI_URL = f'{API_PREFIX}/openapi.json'
 
-origins = [
-    'http://localhost:3000',
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
+app = FastAPI(docs_url=DOCS_URL, redoc_url=REDOC_URL, openapi_url=OPENAPI_URL)
+prefix_router = APIRouter(prefix=API_PREFIX)
 
 def get_db():
     db = SessionLocal()
@@ -28,29 +22,31 @@ def get_db():
     finally:
         db.close()
 
-@app.get('/records', response_model=list[schemas.FlightRecord])
+@prefix_router.get('/records', response_model=list[schemas.FlightRecord])
 def get_flight_records(db: Session = Depends(get_db)):
     return crud.get_flight_records(db)
 
-@app.post('/records', response_model=schemas.FlightRecord)
+@prefix_router.post('/records', response_model=schemas.FlightRecord)
 def create_flight_record(
     record: schemas.FlightRecordCreate,
     db: Session = Depends(get_db),
 ):
     return crud.create_flight_record(db, record)
 
-@app.get('/records/{record_id}', response_model=schemas.FlightRecord)
+@prefix_router.get('/records/{record_id}', response_model=schemas.FlightRecord)
 def get_flight_record(record_id: int, db: Session = Depends(get_db)):
     return crud.get_flight_record(db, record_id)
 
-@app.get('/records/{record_id}/data', response_model=schemas.FlightData)
+@prefix_router.get('/records/{record_id}/data', response_model=schemas.FlightData)
 def get_flight_data(record_id: int, db: Session = Depends(get_db)):
     return crud.get_flight_data(db, record_id)
 
-@app.post('/records/{record_id}/data', response_model=schemas.FlightData)
+@prefix_router.post('/records/{record_id}/data', response_model=schemas.FlightData)
 def create_flight_data(
     record_id: int,
     data: schemas.FlightDataCreate,
     db: Session = Depends(get_db)
 ):
     return crud.create_flight_data(db, record_id, data)
+
+app.include_router(prefix_router)

@@ -7,7 +7,7 @@ function useFlightRecordStorage() {
   // Fetch flight records on first component render
   useEffect(() => {
     (async () => {
-      const records = await fetchData('http://localhost:8000/records');
+      const records = await fetchData('/api/records');
       flightRecords.current = records.reduce((prev, record) => {
         prev[record.id] = {
           id: record.id,
@@ -23,9 +23,7 @@ function useFlightRecordStorage() {
   // flight data is fetched already.
   async function getFlightData(flightRecordId) {
     if(!flightDataExists(flightRecordId)) {
-      const data = await fetchData(
-        `http://localhost:8000/records/${flightRecordId}/data`
-      );
+      const data = await fetchData(`/api/records/${flightRecordId}/data`);
       flightData.current[flightRecordId] = data;
     }
 
