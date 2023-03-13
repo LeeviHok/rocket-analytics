@@ -20,7 +20,7 @@ this project might be a good starting point if you like to do things yourself.
 
 <br>
 
-![Image of the website](Images/Flight_analytics.png)
+![Image of the website](images/Flight_analytics.png)
 
 ## Why am I doing this project?
 
@@ -43,7 +43,7 @@ any use of them. So do I already have enough excuses to make my own software?
 
 <br>
 
-![Image of the Featherweight Interface Program](Images/FIP.png)
+![Image of the Featherweight Interface Program](images/FIP.png)
 
 ## What can you do with the website?
 
