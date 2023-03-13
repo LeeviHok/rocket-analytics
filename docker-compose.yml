@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./backend/api/Dockerfile
+      args:
+        PSQL_USER: ${PSQL_USER}
+        PSQL_PWD: ${PSQL_PWD}
+        PSQL_DB: ${PSQL_DB}
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      PSQL_DOMAIN: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./backend/postgres/Dockerfile
+      args:
+        PSQL_USER: ${PSQL_USER}
+        PSQL_PWD: ${PSQL_PWD}
+        PSQL_DB: ${PSQL_DB}
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PSQL_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./backend/nginx/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+
+
+
+
+#  postgres:
+#    image: postgres:15.2
+#    restart: always
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_USER: ${PSQL_USER}
+#      POSTGRES_PASSWORD: ${PSQL_PWD}
+#      POSTGRES_DB: ${PSQL_DB}
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data/
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres"]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
