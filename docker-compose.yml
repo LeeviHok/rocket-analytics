@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api:
-    image: ${DOCKER_REGISTRY}/rocket-analytics-api
+    image: ${DOCKER_REGISTRY}/rocket-analytics/api
     build:
       context: .
       dockerfile: ./backend/api/Dockerfile
@@ -20,7 +20,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: ${DOCKER_REGISTRY}/rocket-analytics-postgres
+    image: ${DOCKER_REGISTRY}/rocket-analytics/postgres
     build:
       context: .
       dockerfile: ./backend/postgres/Dockerfile
@@ -40,7 +40,7 @@ services:
       retries: 5
 
   nginx:
-    image: ${DOCKER_REGISTRY}/rocket-analytics-nginx
+    image: ${DOCKER_REGISTRY}/rocket-analytics/nginx
     build:
       context: .
       dockerfile: ./backend/nginx/Dockerfile
