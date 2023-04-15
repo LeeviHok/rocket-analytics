@@ -60,6 +60,9 @@ Parameters:
     Description: Enter IPv4 address which can access server over SSH
     Type: String
 
+Conditions:
+  HasSshIpAddress: !Not [!Equals [!Ref SshIpAddress, ""]]
+
 Resources:
   # ECR repositories
   EcrRepositoryApi:
@@ -76,3 +79,26 @@ Resources:
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: rocket-analytics/postgres
+
+  # Security group
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: WebServer
+      GroupDescription: HTTP and SSH traffic to the web server
+      SecurityGroupIngress:
+        - Description: Open HTTP to the NGINX
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+        # Create rule for SSH if IP address parameter is provided
+        - !If
+          - HasSshIpAddress
+          - Description: Open SSH to the EC2
+            IpProtocol: tcp
+            FromPort: 22
+            ToPort: 22
+            CidrIp: !Sub "${SshIpAddress}/32"
+          - !Ref AWS::NoValue
