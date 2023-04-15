@@ -104,6 +104,24 @@ Resources:
           Action: ssm:GetParameter
           Resource: "*"
 
+  # IAM Roles
+  WebServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "WebServer-${Region}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref EcrPullPolicy
+        - !Ref SsmReadParameterPolicy
+
   # SSM Parameter Store parameters
   AmiIdParameter:
     Type: AWS::SSM::Parameter
