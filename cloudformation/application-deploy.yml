@@ -23,3 +23,17 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: ServerSecurityGroup
 
+Resources:
+  Server:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone
+      IamInstanceProfile: !Sub "ServerInstanceProfile-${Region}"
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: RocketAnalyticsSsh
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      Volumes:
+        - Device: /dev/sdf
+          VolumeId: !Ref DatabaseVolumeId
