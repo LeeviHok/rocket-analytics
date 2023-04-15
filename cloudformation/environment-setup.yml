@@ -59,3 +59,20 @@ Parameters:
   SshIpAddress:
     Description: Enter IPv4 address which can access server over SSH
     Type: String
+
+Resources:
+  # ECR repositories
+  EcrRepositoryApi:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: rocket-analytics/api
+
+  EcrRepositoryNginx:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: rocket-analytics/nginx
+
+  EcrRepositoryPostgres:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: rocket-analytics/postgres
