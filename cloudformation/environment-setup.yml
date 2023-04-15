@@ -255,6 +255,13 @@ Resources:
       Size: 8
       VolumeType: gp3
 
+  # SSH key
+  SshKey:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: RocketAnalyticsSsh
+      KeyType: ed25519
+
   # Security group
   WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
