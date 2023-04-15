@@ -64,6 +64,46 @@ Conditions:
   HasSshIpAddress: !Not [!Equals [!Ref SshIpAddress, ""]]
 
 Resources:
+  # IAM Policies
+  EcrPullPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      # AWS documentation states the following:
+      # "Naming an IAM resource can cause an unrecoverable error if you reuse
+      # the same template in multiple Regions."
+      # They recommend adding region into the IAM resource name dynamically to
+      # avoid this potentially unrecoverable error.
+      ManagedPolicyName: !Sub "EcrPull-${Region}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: GetAuthorizationToken
+            Effect: Allow
+            Action: ecr:GetAuthorizationToken
+            Resource: "*"
+
+          - Sid: PullImagesFromRepositories
+            Effect: Allow
+            Action:
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+            Resource:
+              - !GetAtt EcrRepositoryApi.Arn
+              - !GetAtt EcrRepositoryNginx.Arn
+              - !GetAtt EcrRepositoryPostgres.Arn
+
+  SsmReadParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "SsmReadParameter-${Region}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Sid: ReadSsmParameter
+          Effect: Allow
+          Action: ssm:GetParameter
+          Resource: "*"
+
   # SSM Parameter Store parameters
   AmiIdParameter:
     Type: AWS::SSM::Parameter
