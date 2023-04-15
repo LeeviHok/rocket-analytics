@@ -122,6 +122,14 @@ Resources:
         - !Ref EcrPullPolicy
         - !Ref SsmReadParameterPolicy
 
+  # Web server instance profile
+  ServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "ServerInstanceProfile-${Region}"
+      Roles:
+        - Ref: WebServerRole
+
   # SSM Parameter Store parameters
   AmiIdParameter:
     Type: AWS::SSM::Parameter
