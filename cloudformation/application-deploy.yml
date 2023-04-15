@@ -1,0 +1,25 @@
+Parameters:
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServerAmiId
+
+  AvailabilityZone:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServiceAvailabilityZone
+
+  DatabaseVolumeId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: DatabaseVolumeId
+
+  InstanceType:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServerInstanceType
+
+  Region:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServiceRegion
+
+  SecurityGroup:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServerSecurityGroup
+
