@@ -27,6 +27,15 @@ Parameters:
       # South America
       - sa-east-1
 
+  GitRepository:
+    Description: Enter Git repository URL (eg. https://github.com/ExampleUser/repository-name.git)
+    Type: String
+
+  GitRepositoryBranch:
+    Description: Enter git repository release branch name
+    Type: String
+    Default: main
+
   InstanceType:
     Description: Select server instance type (Not all types are available in all regions)
     Type: String
@@ -140,6 +149,26 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref AmiId
+
+  GitRepositoryParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Git repository URL for source code
+      Name: GitRepository
+      Tier: Standard
+      Type: String
+      Value: !Ref GitRepository
+
+  GitRepositoryBranchParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Git repository release branch name
+      Name: GitRepositoryBranch
+      Tier: Standard
+      Type: String
+      Value: !Ref GitRepositoryBranch
 
   InstanceTypeParameter:
     Type: AWS::SSM::Parameter
