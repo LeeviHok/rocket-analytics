@@ -65,6 +65,46 @@ Conditions:
 
 Resources:
   # SSM Parameter Store parameters
+  AmiIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: EC2 server instance AMI ID
+      Name: ServerAmiId
+      Tier: Standard
+      Type: String
+      Value: !Ref AmiId
+
+  InstanceTypeParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: EC2 server instance type
+      Name: ServerInstanceType
+      Tier: Standard
+      Type: String
+      Value: !Ref InstanceType
+
+  SecurityGroupParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Security group ID for the web server
+      Name: ServerSecurityGroup
+      Tier: Standard
+      Type: String
+      Value: !GetAtt WebServerSecurityGroup.GroupId
+
+  ServiceRegionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: AWS region for the web service
+      Name: ServiceRegion
+      Tier: Standard
+      Type: String
+      Value: !Ref Region
+
   AvailabilityZoneParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -74,6 +114,56 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Select [0, Fn::GetAZs: !Ref Region]
+
+  DatabaseVolumeParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Database EBS volume ID
+      Name: DatabaseVolumeId
+      Tier: Standard
+      Type: String
+      Value: !GetAtt DatabaseVolume.VolumeId
+
+  PostgresUsernameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Username for the PostgreSQL database
+      Name: PSQL_USER
+      Tier: Standard
+      Type: String
+      Value: !Ref PostgresUsername
+
+  PostgresPasswordParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Password for the PostgreSQL user
+      Name: PSQL_PWD
+      Tier: Standard
+      Type: String
+      Value: !Ref PostgresPassword
+
+  PostgresDatabaseParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Name for the PostgreSQL database
+      Name: PSQL_DB
+      Tier: Standard
+      Type: String
+      Value: !Ref PostgresDatabase
+
+  DockerRegistryParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Base URI to the Elastic Container Registry
+      Name: DOCKER_REGISTRY
+      Tier: Standard
+      Type: String
+      Value: !Sub "${AWS::AccountId}.dkr.ecr.${Region}.amazonaws.com"
 
   # ECR repositories
   EcrRepositoryApi:
