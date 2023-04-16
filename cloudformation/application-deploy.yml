@@ -86,6 +86,31 @@ Resources:
             DEBIAN_FRONTEND=noninteractive apt-get -y install awscli
           }
 
+          get_database_volume_name () {
+            id_without_hyphen=$(echo ${DatabaseVolumeId} | tr -d "-")
+            lsblk -p -o NAME,SERIAL | awk -v id=$id_without_hyphen '$2 == id {print $1}'
+          }
+
+          database_volume_is_formatted () {
+            filesystem=$(lsblk -p -o NAME,FSTYPE | awk -v name=$(get_database_volume_name) '$1 == name {print $2}')
+            if [ "$filesystem" = "xfs" ]; then
+              true
+            else
+              false
+            fi
+          }
+
+          mount_database_volume () {
+            if database_volume_is_formatted; then
+              echo "Database EBS volume ($(get_database_volume_name)) has already been formatted."
+            else
+              echo "Database EBS volume ($(get_database_volume_name)) is not formatted, formatting to XFS."
+              mkfs -t xfs $(get_database_volume_name)
+            fi
+            mkdir /data
+            mount $(get_database_volume_name) /data
+          }
+
           create_install_script () {
             # Create script which will be executed as a root after system startup
             touch /etc/rc.local && chmod 700 /etc/rc.local
@@ -95,11 +120,15 @@ Resources:
             declare -f install_docker | tee -a /etc/rc.local
             declare -f install_application | tee -a /etc/rc.local
             declare -f install_aws_cli | tee -a /etc/rc.local
+            declare -f get_database_volume_name | tee -a /etc/rc.local
+            declare -f database_volume_is_formatted | tee -a /etc/rc.local
+            declare -f mount_database_volume | tee -a /etc/rc.local
 
             # Execute install functions
             echo 'install_docker' | tee -a /etc/rc.local
             echo 'install_application' | tee -a /etc/rc.local
             echo 'install_aws_cli' | tee -a /etc/rc.local
+            echo 'mount_database_volume' | tee -a /etc/rc.local
 
             # Start the application
             echo 'sleep 1m' | tee -a /etc/rc.local
