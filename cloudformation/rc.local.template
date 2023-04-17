@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# *xxxx* will be replaced by actual values when rc.local is created
+ACCOUNT_ID="*AccountId*"
+DB_VOLUME_ID="*DatabaseVolumeId*"
+GIT_REPOSITORY="*GitRepository*"
+GIT_BRANCH="*GitBranch*"
+REGION="*Region*"
+
+install_docker () {
+  DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+  mkdir -m 0755 -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+  echo \
+    "deb [arch=$(dpkg --print-architecture)" \
+    "signed-by=/etc/apt/keyrings/docker.gpg]" \
+    "https://download.docker.com/linux/ubuntu" \
+    "$(lsb_release -cs) stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  DEBIAN_FRONTEND=noninteractive apt-get -y update
+  DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+}
+
+install_application () {
+  DEBIAN_FRONTEND=noninteractive apt-get -y update
+  DEBIAN_FRONTEND=noninteractive apt-get -y install git awscli
+
+  git clone $GIT_REPOSITORY /home/ubuntu/rocket-analytics
+  git -C /home/ubuntu/rocket-analytics checkout $GIT_BRANCH
+
+  touch /home/ubuntu/rocket-analytics/.env && \
+    chmod 600 /home/ubuntu/rocket-analytics/.env
+
+  PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region $REGION \
+    --query 'Parameter.Value' --output text)
+  PSQL_PWD=$(aws ssm get-parameter --name 'PSQL_PWD' --region $REGION \
+    --query 'Parameter.Value' --output text)
+  PSQL_DB=$(aws ssm get-parameter --name 'PSQL_DB' --region $REGION \
+    --query 'Parameter.Value' --output text)
+  DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' \
+    --region $REGION --query 'Parameter.Value' --output text)
+  ENV_FILE="/home/ubuntu/rocket-analytics/.env"
+
+  echo "PSQL_USER=$PSQL_USER" | tee -a $ENV_FILE
+  echo "PSQL_PWD=$PSQL_PWD" | tee -a $ENV_FILE
+  echo "PSQL_DB=$PSQL_DB" | tee -a $ENV_FILE
+  echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
+}
+
+install_aws_cli () {
+  DEBIAN_FRONTEND=noninteractive apt-get -y install awscli
+}
+
+get_db_volume_name () {
+  id_without_hyphen=$(echo "$DB_VOLUME_ID" | tr -d "-")
+  lsblk -p -o NAME,SERIAL | awk -v id=$id_without_hyphen '$2 == id {print $1}'
+}
+
+db_volume_is_formatted () {
+  filesystem=$(lsblk -p -o NAME,FSTYPE | \
+    awk -v name=$(get_db_volume_name) '$1 == name {print $2}')
+  if [ "$filesystem" = "xfs" ]; then
+    true
+  else
+    false
+  fi
+}
+
+mount_db_volume () {
+  if db_volume_is_formatted; then
+    echo "Database EBS volume ($(get_db_volume_name)) has already been" \
+      "formatted."
+  else
+    echo "Database EBS volume ($(get_db_volume_name)) is not formatted," \
+      "formatting to XFS."
+    mkfs -t xfs $(get_db_volume_name)
+  fi
+  mkdir /data
+  mount $(get_db_volume_name) /data
+}
+
+# Prepare for starting the application
+install_docker
+install_application
+install_aws_cli
+mount_db_volume
+
+# Wait for the network to get up and running
+sleep 1m
+
+# Start the application
+compose_file="/home/ubuntu/rocket-analytics/docker-compose.yml"
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin \
+  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+docker compose -f $compose_file pull
+docker compose -f $compose_file up -d --no-build
+
+# This script must run only once when server is created
+rm $0

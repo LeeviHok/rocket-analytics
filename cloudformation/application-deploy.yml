@@ -49,100 +49,27 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          install_updates () {
-            DEBIAN_FRONTEND=noninteractive apt-get -y update
-            DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+          create_auto_install_script () {
+            # Clone git repository to get 'rc.local.template' file
+            git clone ${GitRepository} /tmp/rocket-analytics
+            git -C /tmp/rocket-analytics checkout ${GitBranch}
+
+            # Create 'rc.local' from the template file
+            template=/tmp/rocket-analytics/cloudformation/rc.local.template
+            cp $template /etc/rc.local && chmod 700 /etc/rc.local
+
+            # Substitute variable placeholders with actual values
+            sed -i 's,\*AccountId\*,${AWS::AccountId},g' /etc/rc.local
+            sed -i 's,\*DatabaseVolumeId\*,${DatabaseVolumeId},g' /etc/rc.local
+            sed -i 's,\*GitRepository\*,${GitRepository},g' /etc/rc.local
+            sed -i 's,\*GitBranch\*,${GitBranch},g' /etc/rc.local
+            sed -i 's,\*Region\*,${Region},g' /etc/rc.local
           }
 
-          install_docker () {
-            DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl gnupg lsb-release
+          # Update software packages (requires reboot)
+          DEBIAN_FRONTEND=noninteractive apt-get -y update
+          DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+          DEBIAN_FRONTEND=noninteractive apt-get -y install git
 
-            mkdir -m 0755 -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-            echo \
-              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-              $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-            DEBIAN_FRONTEND=noninteractive apt-get -y update
-            DEBIAN_FRONTEND=noninteractive apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-          }
-
-          install_application () {
-            DEBIAN_FRONTEND=noninteractive apt-get -y update
-            DEBIAN_FRONTEND=noninteractive apt-get -y install git awscli
-
-            git clone ${GitRepository} /home/ubuntu/rocket-analytics
-            git -C /home/ubuntu/rocket-analytics checkout ${GitBranch}
-
-            touch /home/ubuntu/rocket-analytics/.env && chmod 600 /home/ubuntu/rocket-analytics/.env
-            echo "PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
-            echo "PSQL_PWD=$(aws ssm get-parameter --name 'PSQL_PWD' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
-            echo "PSQL_DB=$(aws ssm get-parameter --name 'PSQL_DB' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
-            echo "DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
-          }
-
-          install_aws_cli () {
-            DEBIAN_FRONTEND=noninteractive apt-get -y install awscli
-          }
-
-          get_database_volume_name () {
-            id_without_hyphen=$(echo ${DatabaseVolumeId} | tr -d "-")
-            lsblk -p -o NAME,SERIAL | awk -v id=$id_without_hyphen '$2 == id {print $1}'
-          }
-
-          database_volume_is_formatted () {
-            filesystem=$(lsblk -p -o NAME,FSTYPE | awk -v name=$(get_database_volume_name) '$1 == name {print $2}')
-            if [ "$filesystem" = "xfs" ]; then
-              true
-            else
-              false
-            fi
-          }
-
-          mount_database_volume () {
-            if database_volume_is_formatted; then
-              echo "Database EBS volume ($(get_database_volume_name)) has already been formatted."
-            else
-              echo "Database EBS volume ($(get_database_volume_name)) is not formatted, formatting to XFS."
-              mkfs -t xfs $(get_database_volume_name)
-            fi
-            mkdir /data
-            mount $(get_database_volume_name) /data
-          }
-
-          create_install_script () {
-            # Create script which will be executed as a root after system startup
-            touch /etc/rc.local && chmod 700 /etc/rc.local
-            echo '#!/bin/bash' | tee -a /etc/rc.local
-
-            # Add install functions to the script
-            declare -f install_docker | tee -a /etc/rc.local
-            declare -f install_application | tee -a /etc/rc.local
-            declare -f install_aws_cli | tee -a /etc/rc.local
-            declare -f get_database_volume_name | tee -a /etc/rc.local
-            declare -f database_volume_is_formatted | tee -a /etc/rc.local
-            declare -f mount_database_volume | tee -a /etc/rc.local
-
-            # Execute install functions
-            echo 'install_docker' | tee -a /etc/rc.local
-            echo 'install_application' | tee -a /etc/rc.local
-            echo 'install_aws_cli' | tee -a /etc/rc.local
-            echo 'mount_database_volume' | tee -a /etc/rc.local
-
-            # Start the application
-            echo 'sleep 1m' | tee -a /etc/rc.local
-            echo 'aws ecr get-login-password --region ${Region} | docker login --username AWS --password-stdin ${AWS::AccountId}.dkr.ecr.${Region}.amazonaws.com' | tee -a /etc/rc.local
-            echo 'docker compose -f /home/ubuntu/rocket-analytics/docker-compose.yml pull' | tee -a /etc/rc.local
-            echo 'docker compose -f /home/ubuntu/rocket-analytics/docker-compose.yml up -d --no-build' | tee -a /etc/rc.local
-
-            # Delete install script
-            echo 'rm $0' | tee -a /etc/rc.local
-          }
-
-          # This will likely update the kernel which will require reboot
-          install_updates
-
-          # This script will run rest of the installation after reboot
-          create_install_script
+          create_auto_install_script
           reboot
