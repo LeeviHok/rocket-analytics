@@ -31,7 +31,7 @@ Parameters:
     Description: Enter Git repository URL (eg. https://github.com/ExampleUser/repository-name.git)
     Type: String
 
-  GitRepositoryBranch:
+  GitBranch:
     Description: Enter git repository release branch name
     Type: String
     Default: main
@@ -114,10 +114,10 @@ Resources:
           Resource: "*"
 
   # IAM Roles
-  WebServerRole:
+  ServerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "WebServer-${Region}"
+      RoleName: !Sub "Server-${Region}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -137,7 +137,7 @@ Resources:
     Properties:
       InstanceProfileName: !Sub "ServerInstanceProfile-${Region}"
       Roles:
-        - Ref: WebServerRole
+        - Ref: ServerRole
 
   # SSM Parameter Store parameters
   AmiIdParameter:
@@ -160,15 +160,15 @@ Resources:
       Type: String
       Value: !Ref GitRepository
 
-  GitRepositoryBranchParameter:
+  GitBranchParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
       Description: Git repository release branch name
-      Name: GitRepositoryBranch
+      Name: GitBranch
       Tier: Standard
       Type: String
-      Value: !Ref GitRepositoryBranch
+      Value: !Ref GitBranch
 
   InstanceTypeParameter:
     Type: AWS::SSM::Parameter
@@ -180,17 +180,17 @@ Resources:
       Type: String
       Value: !Ref InstanceType
 
-  SecurityGroupParameter:
+  SecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
       Description: Security group ID for the web server
-      Name: ServerSecurityGroup
+      Name: ServerSecurityGroupId
       Tier: Standard
       Type: String
-      Value: !GetAtt WebServerSecurityGroup.GroupId
+      Value: !GetAtt ServerSecurityGroup.GroupId
 
-  ServiceRegionParameter:
+  RegionParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
@@ -255,7 +255,7 @@ Resources:
     Properties:
       DataType: text
       Description: Base URI to the Elastic Container Registry
-      Name: DOCKER_REGISTRY
+      Name: DockerRegistry
       Tier: Standard
       Type: String
       Value: !Sub "${AWS::AccountId}.dkr.ecr.${Region}.amazonaws.com"
@@ -292,10 +292,10 @@ Resources:
       KeyType: ed25519
 
   # Security group
-  WebServerSecurityGroup:
+  ServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: WebServer
+      GroupName: Server
       GroupDescription: HTTP and SSH traffic to the web server
       SecurityGroupIngress:
         - Description: Open HTTP to the NGINX

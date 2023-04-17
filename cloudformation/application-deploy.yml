@@ -15,9 +15,9 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: GitRepository
 
-  GitRepositoryBranch:
+  GitBranch:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: GitRepositoryBranch
+    Default: GitBranch
 
   InstanceType:
     Type: AWS::SSM::Parameter::Value<String>
@@ -27,9 +27,9 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: ServiceRegion
 
-  SecurityGroup:
+  SecurityGroupId:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: ServerSecurityGroup
+    Default: ServerSecurityGroupId
 
 Resources:
   Server:
@@ -41,7 +41,7 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: RocketAnalyticsSsh
       SecurityGroupIds:
-        - !Ref SecurityGroup
+        - !Ref SecurityGroupId
       Volumes:
         - Device: /dev/sdf
           VolumeId: !Ref DatabaseVolumeId
@@ -73,13 +73,13 @@ Resources:
             DEBIAN_FRONTEND=noninteractive apt-get -y install git awscli
 
             git clone ${GitRepository} /home/ubuntu/rocket-analytics
-            git -C /home/ubuntu/rocket-analytics checkout ${GitRepositoryBranch}
+            git -C /home/ubuntu/rocket-analytics checkout ${GitBranch}
 
             touch /home/ubuntu/rocket-analytics/.env && chmod 600 /home/ubuntu/rocket-analytics/.env
             echo "PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
             echo "PSQL_PWD=$(aws ssm get-parameter --name 'PSQL_PWD' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
             echo "PSQL_DB=$(aws ssm get-parameter --name 'PSQL_DB' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
-            echo "DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DOCKER_REGISTRY' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
+            echo "DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' --region ${Region} --query 'Parameter.Value' --output text)" | tee -a /home/ubuntu/rocket-analytics/.env
           }
 
           install_aws_cli () {
