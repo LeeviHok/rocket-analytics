@@ -131,6 +131,12 @@ Resources:
         - !Ref EcrPullPolicy
         - !Ref SsmReadParameterPolicy
 
+  # EIP addresses
+  ServerIpAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
   # Web server instance profile
   ServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -189,6 +195,16 @@ Resources:
       Tier: Standard
       Type: String
       Value: !GetAtt ServerSecurityGroup.GroupId
+
+  ServerIpAddressIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Elastic IP address ID for the web server
+      Name: ServerIpAddressId
+      Tier: Standard
+      Type: String
+      Value: !GetAtt ServerIpAddress.AllocationId
 
   RegionParameter:
     Type: AWS::SSM::Parameter

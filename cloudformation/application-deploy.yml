@@ -23,6 +23,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: ServerInstanceType
 
+  IpAddressId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ServerIpAddressId
+
   Region:
     Type: AWS::SSM::Parameter::Value<String>
     Default: ServiceRegion
@@ -32,6 +36,12 @@ Parameters:
     Default: ServerSecurityGroupId
 
 Resources:
+  ServerIpAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !Ref IpAddressId
+      InstanceId: !Ref Server
+
   Server:
     Type: AWS::EC2::Instance
     Properties:
