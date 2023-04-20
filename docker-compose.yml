@@ -18,6 +18,15 @@ services:
       postgres:
         condition: service_healthy
 
+  nginx:
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/nginx
+    build:
+      context: .
+      dockerfile: ./backend/nginx/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+
   postgres:
     image: ${DOCKER_REGISTRY:?}/rocket-analytics/postgres
     build:
@@ -37,12 +46,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  nginx:
-    image: ${DOCKER_REGISTRY:?}/rocket-analytics/nginx
-    build:
-      context: .
-      dockerfile: ./backend/nginx/Dockerfile
-    restart: always
-    ports:
-      - "80:80"
