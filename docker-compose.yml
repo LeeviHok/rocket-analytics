@@ -6,14 +6,13 @@ services:
     build:
       context: .
       dockerfile: ./backend/api/Dockerfile
-      args:
-        PSQL_USER: ${PSQL_USER}
-        PSQL_PWD: ${PSQL_PWD}
-        PSQL_DB: ${PSQL_DB}
     restart: always
     ports:
       - "8000:8000"
     environment:
+      PSQL_USER: ${PSQL_USER}
+      PSQL_PWD: ${PSQL_PWD}
+      PSQL_DB: ${PSQL_DB}
       PSQL_DOMAIN: postgres
     depends_on:
       postgres:
@@ -24,13 +23,13 @@ services:
     build:
       context: .
       dockerfile: ./backend/postgres/Dockerfile
-      args:
-        PSQL_USER: ${PSQL_USER}
-        PSQL_PWD: ${PSQL_PWD}
-        PSQL_DB: ${PSQL_DB}
     restart: always
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: ${PSQL_USER}
+      POSTGRES_PASSWORD: ${PSQL_PWD}
+      POSTGRES_DB: ${PSQL_DB}
     volumes:
       - /data:/var/lib/postgresql/data/
     healthcheck:
