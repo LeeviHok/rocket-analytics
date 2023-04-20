@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api:
-    image: ${DOCKER_REGISTRY}/rocket-analytics/api
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/api
     build:
       context: .
       dockerfile: ./backend/api/Dockerfile
@@ -10,16 +10,16 @@ services:
     ports:
       - "8000:8000"
     environment:
-      PSQL_USER: ${PSQL_USER}
-      PSQL_PWD: ${PSQL_PWD}
-      PSQL_DB: ${PSQL_DB}
+      PSQL_USER: ${PSQL_USER:?}
+      PSQL_PWD: ${PSQL_PWD:?}
+      PSQL_DB: ${PSQL_DB:?}
       PSQL_DOMAIN: postgres
     depends_on:
       postgres:
         condition: service_healthy
 
   postgres:
-    image: ${DOCKER_REGISTRY}/rocket-analytics/postgres
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/postgres
     build:
       context: .
       dockerfile: ./backend/postgres/Dockerfile
@@ -27,9 +27,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: ${PSQL_USER}
-      POSTGRES_PASSWORD: ${PSQL_PWD}
-      POSTGRES_DB: ${PSQL_DB}
+      POSTGRES_USER: ${PSQL_USER:?}
+      POSTGRES_PASSWORD: ${PSQL_PWD:?}
+      POSTGRES_DB: ${PSQL_DB:?}
     volumes:
       - /data:/var/lib/postgresql/data/
     healthcheck:
@@ -39,7 +39,7 @@ services:
       retries: 5
 
   nginx:
-    image: ${DOCKER_REGISTRY}/rocket-analytics/nginx
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/nginx
     build:
       context: .
       dockerfile: ./backend/nginx/Dockerfile
