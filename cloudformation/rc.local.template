@@ -7,6 +7,10 @@ GIT_REPOSITORY="*GitRepository*"
 GIT_BRANCH="*GitBranch*"
 REGION="*Region*"
 
+GIT_REPOSITORY_PATH=/home/ubuntu/rocket-analytics
+COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
+ENV_FILE="${GIT_REPOSITORY_PATH}/.env"
+
 install_docker () {
   DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ca-certificates \
@@ -38,11 +42,8 @@ install_application () {
   DEBIAN_FRONTEND=noninteractive apt-get -y update
   DEBIAN_FRONTEND=noninteractive apt-get -y install git awscli
 
-  git clone $GIT_REPOSITORY /home/ubuntu/rocket-analytics
-  git -C /home/ubuntu/rocket-analytics checkout $GIT_BRANCH
-
-  touch /home/ubuntu/rocket-analytics/.env && \
-    chmod 600 /home/ubuntu/rocket-analytics/.env
+  git clone $GIT_REPOSITORY $GIT_REPOSITORY_PATH
+  git -C $GIT_REPOSITORY_PATH checkout $GIT_BRANCH
 
   PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region $REGION \
     --query 'Parameter.Value' --output text)
@@ -52,8 +53,8 @@ install_application () {
     --query 'Parameter.Value' --output text)
   DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' \
     --region $REGION --query 'Parameter.Value' --output text)
-  ENV_FILE="/home/ubuntu/rocket-analytics/.env"
 
+  touch $ENV_FILE && chmod 600 $ENV_FILE
   echo "PSQL_USER=$PSQL_USER" | tee -a $ENV_FILE
   echo "PSQL_PWD=$PSQL_PWD" | tee -a $ENV_FILE
   echo "PSQL_DB=$PSQL_DB" | tee -a $ENV_FILE
@@ -102,12 +103,11 @@ mount_db_volume
 sleep 1m
 
 # Start the application
-compose_file="/home/ubuntu/rocket-analytics/docker-compose.yml"
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin \
   $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-docker compose -f $compose_file pull
-docker compose -f $compose_file up -d --no-build
+docker compose -f $COMPOSE_FILE pull
+docker compose -f $COMPOSE_FILE up -d --no-build
 
 # This script must run only once when server is created
 rm $0
