@@ -22,7 +22,7 @@ function useFlightRecordStorage() {
   // Fetches flight data and stores it locally. Local copy is returned if
   // flight data is fetched already.
   async function getFlightData(flightRecordId) {
-    if(!flightDataExists(flightRecordId)) {
+    if (!flightDataExists(flightRecordId)) {
       const data = await fetchData(`/api/records/${flightRecordId}/data`);
       flightData.current[flightRecordId] = data;
     }

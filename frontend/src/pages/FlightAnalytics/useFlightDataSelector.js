@@ -31,7 +31,7 @@ function useFlightDataSelector(getFlightData) {
     getFlightData(flightRecordId).then(flightData => {
       setSelectedFlightData(flightData);
       setIsLoading(false);
-      if(callbackRef.current) {
+      if (callbackRef.current) {
         callbackRef.current();
         callbackRef.current = null;
       }

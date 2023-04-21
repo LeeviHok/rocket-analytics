@@ -14,7 +14,7 @@ function FlightSelectionModal({
 
   // Show currently open flight record as selected when modal is opened
   useEffect(() => {
-    if(isVisible) {
+    if (isVisible) {
       setSelectedFlightRecordId(openedFlightRecordId);
     }
   }, [isVisible, openedFlightRecordId]);
