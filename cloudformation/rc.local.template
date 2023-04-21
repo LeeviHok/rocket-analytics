@@ -12,6 +12,7 @@ COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
 ENV_FILE="${GIT_REPOSITORY_PATH}/.env"
 
 install_docker () {
+  DEBIAN_FRONTEND=noninteractive apt-get -y update
   DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ca-certificates \
     curl \
@@ -39,12 +40,16 @@ install_docker () {
 }
 
 install_application () {
+  # Install software packages
   DEBIAN_FRONTEND=noninteractive apt-get -y update
-  DEBIAN_FRONTEND=noninteractive apt-get -y install git awscli
+  DEBIAN_FRONTEND=noninteractive apt-get -y install awscli git
+  install_docker
 
+  # Clone git repository to get Docker Compose file
   git clone $GIT_REPOSITORY $GIT_REPOSITORY_PATH
   git -C $GIT_REPOSITORY_PATH checkout $GIT_BRANCH
 
+  # Fetch environment variables for Docker Compose
   PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region $REGION \
     --query 'Parameter.Value' --output text)
   PSQL_PWD=$(aws ssm get-parameter --name 'PSQL_PWD' --region $REGION \
@@ -54,15 +59,20 @@ install_application () {
   DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' \
     --region $REGION --query 'Parameter.Value' --output text)
 
+  # Create and populate '.env' file for Docker Compose
   touch $ENV_FILE && chmod 600 $ENV_FILE
   echo "PSQL_USER=$PSQL_USER" | tee -a $ENV_FILE
   echo "PSQL_PWD=$PSQL_PWD" | tee -a $ENV_FILE
   echo "PSQL_DB=$PSQL_DB" | tee -a $ENV_FILE
   echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
-}
 
-install_aws_cli () {
-  DEBIAN_FRONTEND=noninteractive apt-get -y install awscli
+  mount_db_volume
+
+  # Pull Docker images
+  aws ecr get-login-password --region $REGION | \
+    docker login --username AWS --password-stdin \
+    $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+  docker compose -f $COMPOSE_FILE pull
 }
 
 get_db_volume_name () {
@@ -93,21 +103,9 @@ mount_db_volume () {
   mount $(get_db_volume_name) /data
 }
 
-# Prepare for starting the application
-install_docker
+# Install and start the application
 install_application
-install_aws_cli
-mount_db_volume
-
-# Wait for the network to get up and running
-sleep 1m
-
-# Start the application
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin \
-  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-docker compose -f $COMPOSE_FILE pull
 docker compose -f $COMPOSE_FILE up -d --no-build
 
-# This script must run only once when server is created
+# This script needs to be executed only once when server is created
 rm $0
