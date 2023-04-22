@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import Button from 'react-bootstrap/Button';
 
 import FlightChart from '../../components/FlightChart';
@@ -10,6 +12,7 @@ function FlightAnalytics() {
   const [
     flightRecords,
     getFlightData,
+    refreshFlightRecords,
   ] = useFlightRecordStorage();
 
   const [
@@ -23,6 +26,12 @@ function FlightAnalytics() {
     showModal,
     hideModal,
   ] = useIsVisible(false);
+
+  // Fetch flight records on first component render
+  useEffect(() => {
+    refreshFlightRecords();
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <>

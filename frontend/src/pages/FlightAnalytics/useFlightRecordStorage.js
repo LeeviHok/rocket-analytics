@@ -1,14 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 function useFlightRecordStorage() {
   const flightRecords = useRef({});
   const flightData = useRef({});
-
-  // Fetch flight records on first component render
-  useEffect(() => {
-    refreshFlightRecords();
-    // eslint-disable-next-line
-  }, []);
 
   // Fetches and updates flight records
   async function refreshFlightRecords() {
@@ -45,7 +39,7 @@ function useFlightRecordStorage() {
     return Boolean(flightData.current[flightRecordId]);
   }
 
-  return [flightRecords.current, getFlightData];
+  return [flightRecords.current, getFlightData, refreshFlightRecords];
 }
 
 export default useFlightRecordStorage;
