@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 
 function useFlightRecordStorage() {
   // Initially selected flight data before any actual data is selected
-  const initialData = {
+  const initialFlightData = {
     time: (Array.from(Array(300).keys()).map(n => n/10)),
     accel_axial: [],
     accel_lateral: [],
@@ -18,11 +18,11 @@ function useFlightRecordStorage() {
     altitude_asl: [],
     altitude_agl: [],
   }
+  const [flightData, setFlightData] = useState(initialFlightData);
   const [flightRecords, setFlightRecords] = useState({});
-  const [selectedFlightData, setSelectedFlightData] = useState(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const callbackRef = useRef(null);
-  const flightData = useRef({});
+  const flightDataStore = useRef({});
 
   // Fetches and updates flight records
   async function refreshFlightRecords() {
@@ -45,7 +45,7 @@ function useFlightRecordStorage() {
    */
   function selectFlightData(flightRecordId, callback) {
     getFlightData(flightRecordId).then(flightData => {
-      setSelectedFlightData(flightData);
+      setFlightData(flightData);
       setIsLoading(false);
       if (callbackRef.current) {
         callbackRef.current();
@@ -61,10 +61,10 @@ function useFlightRecordStorage() {
   async function getFlightData(flightRecordId) {
     if (!flightDataExists(flightRecordId)) {
       const data = await fetchData(`/api/records/${flightRecordId}/data`);
-      flightData.current[flightRecordId] = data;
+      flightDataStore.current[flightRecordId] = data;
     }
 
-    return flightData.current[flightRecordId];
+    return flightDataStore.current[flightRecordId];
   }
 
   async function fetchData(url) {
@@ -75,11 +75,11 @@ function useFlightRecordStorage() {
 
   // Check if flight data is already fetched and stored locally
   function flightDataExists(flightRecordId) {
-    return Boolean(flightData.current[flightRecordId]);
+    return Boolean(flightDataStore.current[flightRecordId]);
   }
 
   return [
-    selectedFlightData,
+    flightData,
     flightRecords,
     isLoading,
     refreshFlightRecords,
