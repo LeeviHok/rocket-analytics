@@ -21,7 +21,6 @@ function useFlightRecordStorage() {
   const [flightData, setFlightData] = useState(initialFlightData);
   const [flightRecords, setFlightRecords] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const callbackRef = useRef(null);
   const flightDataStore = useRef({});
 
   // Fetches and updates flight records
@@ -38,33 +37,18 @@ function useFlightRecordStorage() {
     setFlightRecords(recordDict);
   }
 
-  /**
-   * Selects flight data which will be displayed in flight chart.
-   * @param {Number} flightRecordId - Flight record ID which data to select
-   * @param {Function} [callback] - Callback to run after data is retrieved
-   */
-  function selectFlightData(flightRecordId, callback) {
-    getFlightData(flightRecordId).then(flightData => {
-      setFlightData(flightData);
-      setIsLoading(false);
-      if (callbackRef.current) {
-        callbackRef.current();
-        callbackRef.current = null;
-      }
-    });
-    callbackRef.current = callback;
+  // Fetch requested data, update the state, and store the data locally. If
+  // local data exists, it is not fetched again.
+  async function selectFlightData(flightRecordId) {
     setIsLoading(true);
-  }
 
-  // Fetches flight data and stores it locally. Local copy is returned if
-  // flight data is fetched already.
-  async function getFlightData(flightRecordId) {
     if (!flightDataExists(flightRecordId)) {
       const data = await fetchData(`/api/records/${flightRecordId}/data`);
       flightDataStore.current[flightRecordId] = data;
     }
 
-    return flightDataStore.current[flightRecordId];
+    setIsLoading(false);
+    setFlightData(flightDataStore.current[flightRecordId]);
   }
 
   async function fetchData(url) {

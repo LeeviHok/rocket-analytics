@@ -35,7 +35,7 @@ function FlightAnalytics() {
         isLoading={isLoading}
         isVisible={isModalVisible}
         flightRecords={flightRecords}
-        handleRecordOpening={selectFlightData}
+        selectFlightData={selectFlightData}
         handleModalClose={hideModal}
       />
       <Button onClick={showModal}>Select flight</Button>

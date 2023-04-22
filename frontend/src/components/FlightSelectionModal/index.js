@@ -7,7 +7,7 @@ import FlightSelectionTable from '../FlightSelectionTable';
 import LoadingButton from '../LoadingButton';
 
 function FlightSelectionModal({
-  isLoading, isVisible, flightRecords, handleRecordOpening, handleModalClose
+  isLoading, isVisible, flightRecords, selectFlightData, handleModalClose
 }) {
   const [selectedFlightRecordId, setSelectedFlightRecordId] = useState(null);
   const [openedFlightRecordId, setOpenedFlightRecordId] = useState(null);
@@ -19,9 +19,12 @@ function FlightSelectionModal({
     }
   }, [isVisible, openedFlightRecordId]);
 
+  // Open new flight record and close modal once data is ready
   function handleFlightRecordOpening() {
     setOpenedFlightRecordId(selectedFlightRecordId);
-    handleRecordOpening(selectedFlightRecordId, handleModalClose);
+    selectFlightData(selectedFlightRecordId).then(() => {
+      handleModalClose();
+    });
   }
 
   return (
