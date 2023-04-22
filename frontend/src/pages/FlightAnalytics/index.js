@@ -5,21 +5,16 @@ import Button from 'react-bootstrap/Button';
 import FlightChart from '../../components/FlightChart';
 import FlightSelectionModal from '../../components/FlightSelectionModal';
 import useIsVisible from '../../hooks/useIsVisible';
-import useFlightDataSelector from './useFlightDataSelector';
 import useFlightRecordStorage from './useFlightRecordStorage';
 
 function FlightAnalytics() {
   const [
-    flightRecords,
-    getFlightData,
-    refreshFlightRecords,
-  ] = useFlightRecordStorage();
-
-  const [
     flightData,
+    flightRecords,
     isLoading,
+    refreshFlightRecords,
     selectFlightData,
-  ] = useFlightDataSelector(getFlightData);
+  ] = useFlightRecordStorage();
 
   const [
     isModalVisible,
