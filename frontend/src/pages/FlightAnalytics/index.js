@@ -11,7 +11,6 @@ function FlightAnalytics() {
   const [
     flightData,
     flightRecords,
-    isLoading,
     refreshFlightRecords,
     selectFlightData,
   ] = useFlightRecordStorage();
@@ -30,10 +29,10 @@ function FlightAnalytics() {
 
   return (
     <>
-      <FlightChart flightData={flightData} />
+      <FlightChart flightData={flightData.data} />
       <FlightSelectionModal
-        isLoading={isLoading}
         isVisible={isModalVisible}
+        flightData={flightData}
         flightRecords={flightRecords}
         selectFlightData={selectFlightData}
         handleModalClose={hideModal}

@@ -7,7 +7,7 @@ import FlightSelectionTable from '../FlightSelectionTable';
 import LoadingButton from '../LoadingButton';
 
 function FlightSelectionModal({
-  isLoading, isVisible, flightRecords, selectFlightData, handleModalClose
+  isVisible, flightData, flightRecords, selectFlightData, handleModalClose
 }) {
   const [selectedFlightRecordId, setSelectedFlightRecordId] = useState(null);
   const [openedFlightRecordId, setOpenedFlightRecordId] = useState(null);
@@ -35,7 +35,7 @@ function FlightSelectionModal({
 
       <Modal.Body>
         <FlightSelectionTable
-          flightRecords={flightRecords}
+          flightRecords={flightRecords.records}
           selectedFlightRecordId={selectedFlightRecordId}
           handleSelect={setSelectedFlightRecordId}
         />
@@ -43,8 +43,8 @@ function FlightSelectionModal({
 
       <Modal.Footer>
         <LoadingButton
-          isLoading={isLoading}
-          disabled={!selectedFlightRecordId || isLoading}
+          isLoading={flightData.isLoading}
+          disabled={!selectedFlightRecordId || flightData.isLoading}
           onClick={handleFlightRecordOpening}
         >
           Open
