@@ -1,13 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 function useFlightRecordStorage() {
-  const flightRecords = useRef({});
+  const [flightRecords, setFlightRecords] = useState({});
   const flightData = useRef({});
 
   // Fetches and updates flight records
   async function refreshFlightRecords() {
     const records = await fetchData('/api/records');
-    flightRecords.current = records.reduce((prev, record) => ({
+    const recordDict = records.reduce((prev, record) => ({
       ...prev,
       [record.id]: {
         id: record.id,
@@ -15,6 +15,7 @@ function useFlightRecordStorage() {
         flightDatetime: new Date(record.flight_datetime),
       }
     }), {});
+    setFlightRecords(recordDict);
   }
 
   // Fetches flight data and stores it locally. Local copy is returned if
@@ -39,7 +40,7 @@ function useFlightRecordStorage() {
     return Boolean(flightData.current[flightRecordId]);
   }
 
-  return [flightRecords.current, getFlightData, refreshFlightRecords];
+  return [flightRecords, getFlightData, refreshFlightRecords];
 }
 
 export default useFlightRecordStorage;
