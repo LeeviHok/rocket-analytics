@@ -6,18 +6,22 @@ function useFlightRecordStorage() {
 
   // Fetch flight records on first component render
   useEffect(() => {
-    (async () => {
-      const records = await fetchData('/api/records');
-      flightRecords.current = records.reduce((prev, record) => {
-        prev[record.id] = {
-          id: record.id,
-          rocketName: record.rocket_name,
-          flightDatetime: new Date(record.flight_datetime),
-        };
-        return prev;
-      }, {});
-    })();
+    refreshFlightRecords();
+    // eslint-disable-next-line
   }, []);
+
+  // Fetches and updates flight records
+  async function refreshFlightRecords() {
+    const records = await fetchData('/api/records');
+    flightRecords.current = records.reduce((prev, record) => ({
+      ...prev,
+      [record.id]: {
+        id: record.id,
+        rocketName: record.rocket_name,
+        flightDatetime: new Date(record.flight_datetime),
+      }
+    }), {});
+  }
 
   // Fetches flight data and stores it locally. Local copy is returned if
   // flight data is fetched already.
