@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import Button from 'react-bootstrap/Button';
 
+import AlertDanger from '../../components/AlertDanger';
 import FlightChart from '../../components/FlightChart';
 import FlightSelectionModal from '../../components/FlightSelectionModal';
 import useIsVisible from '../../hooks/useIsVisible';
@@ -27,8 +28,15 @@ function FlightAnalytics() {
     // eslint-disable-next-line
   }, []);
 
+  const flightDataLoadingErrorAlert = (
+    <AlertDanger>
+      Something went wrong while loading flight data. Try again later.
+    </AlertDanger>
+  );
+
   return (
     <>
+      {flightData.error && flightDataLoadingErrorAlert}
       <FlightChart flightData={flightData.data} />
       <FlightSelectionModal
         isVisible={isModalVisible}

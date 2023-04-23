@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
+import AlertDanger from '../AlertDanger';
 import FlightSelectionTable from '../FlightSelectionTable';
 import LoadingButton from '../LoadingButton';
 
@@ -22,10 +23,31 @@ function FlightSelectionModal({
   // Open new flight record and close modal once data is ready
   function handleFlightRecordOpening() {
     setOpenedFlightRecordId(selectedFlightRecordId);
-    selectFlightData(selectedFlightRecordId).then(() => {
+    selectFlightData(selectedFlightRecordId).finally(() => {
       handleModalClose();
     });
   }
+
+  function renderModalBody() {
+    if (flightRecords.error) {
+      return loadingErrorAlert;
+    }
+    return flightSelectionTable;
+  }
+
+  const loadingErrorAlert = (
+    <AlertDanger>
+      Something went wrong while loading flight records. Try again later.
+    </AlertDanger>
+  );
+
+  const flightSelectionTable = (
+    <FlightSelectionTable
+      flightRecords={flightRecords.records}
+      selectedFlightRecordId={selectedFlightRecordId}
+      handleSelect={setSelectedFlightRecordId}
+    />
+  );
 
   return (
     <Modal size="lg" show={isVisible} onHide={handleModalClose}>
@@ -34,11 +56,7 @@ function FlightSelectionModal({
       </Modal.Header>
 
       <Modal.Body>
-        <FlightSelectionTable
-          flightRecords={flightRecords.records}
-          selectedFlightRecordId={selectedFlightRecordId}
-          handleSelect={setSelectedFlightRecordId}
-        />
+        {renderModalBody()}
       </Modal.Body>
 
       <Modal.Footer>

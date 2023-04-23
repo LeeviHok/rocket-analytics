@@ -1,5 +1,12 @@
 import { useRef, useState } from 'react';
 
+import { 
+  fetchData,
+  isClientError,
+  isNetworkError,
+  isServerError,
+ } from '../../helpers/fetchData';
+
 function useFlightRecordStorage() {
   // Initially selected flight data before any actual data is selected
   const initialFlightData = {
@@ -19,10 +26,12 @@ function useFlightRecordStorage() {
     altitude_agl: [],
   }
   const [flightData, setFlightData] = useState({
+    error: null,
     isLoading: false,
     data: initialFlightData,
   });
   const [flightRecords, setFlightRecords] = useState({
+    error: null,
     isLoading: true,
     records: {},
   });
@@ -30,50 +39,72 @@ function useFlightRecordStorage() {
 
   // Fetches and updates flight records
   async function refreshFlightRecords() {
-    setFlightRecords({
-      isLoading: true,
-      records: flightRecords.records,
-    });
+    try {
+      setFlightRecords({
+        error: null,
+        isLoading: true,
+        records: flightRecords.records,
+      });
 
-    const records = await fetchData('/api/records');
-    const recordDict = records.reduce((prev, record) => ({
-      ...prev,
-      [record.id]: {
-        id: record.id,
-        rocketName: record.rocket_name,
-        flightDatetime: new Date(record.flight_datetime),
+      const records = await fetchData('/api/records');
+      const recordDict = records.reduce((prev, record) => ({
+        ...prev,
+        [record.id]: {
+          id: record.id,
+          rocketName: record.rocket_name,
+          flightDatetime: new Date(record.flight_datetime),
+        }
+      }), {});
+
+      setFlightRecords({
+        error: null,
+        isLoading: false,
+        records: recordDict,
+      });
+    }
+    catch (e) {
+      if (isClientError(e) || isNetworkError(e) || isServerError(e)) {
+        setFlightRecords({
+          error: e,
+          isLoading: false,
+          records: {},
+        });
       }
-    }), {});
-
-    setFlightRecords({
-      isLoading: false,
-      records: recordDict,
-    });
+      throw e;
+    }
   }
 
   // Fetch requested data, update the state, and store the data locally. If
   // local data exists, it is not fetched again.
   async function selectFlightData(flightRecordId) {
-    setFlightData({
-      isLoading: true,
-      data: flightData.data,
-    });
+    try {
+      setFlightData({
+        error: null,
+        isLoading: true,
+        data: flightData.data,
+      });
 
-    if (!flightDataExists(flightRecordId)) {
-      const data = await fetchData(`/api/records/${flightRecordId}/data`);
-      flightDataStore.current[flightRecordId] = data;
+      if (!flightDataExists(flightRecordId)) {
+        const data = await fetchData(`/api/records/${flightRecordId}/data`);
+        flightDataStore.current[flightRecordId] = data;
+      }
+
+      setFlightData({
+        error: null,
+        isLoading: false,
+        data: flightDataStore.current[flightRecordId],
+      });
     }
-
-    setFlightData({
-      isLoading: false,
-      data: flightDataStore.current[flightRecordId],
-    });
-  }
-
-  async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data;
+    catch (e) {
+      if (isClientError(e) || isNetworkError(e) || isServerError(e)) {
+        setFlightData({
+          error: e,
+          isLoading: false,
+          data: initialFlightData,
+        });
+      }
+      throw e;
+    }
   }
 
   // Check if flight data is already fetched and stored locally
