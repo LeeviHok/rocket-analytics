@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
+import { isEmpty } from '../../helpers/isEmpty';
 import AlertDanger from '../AlertDanger';
 import AlertInfo from '../AlertInfo';
 import FlightSelectionTable from '../FlightSelectionTable';
@@ -36,6 +37,9 @@ function FlightSelectionModal({
     else if (flightRecords.error) {
       return loadingErrorAlert;
     }
+    else if (isEmpty(flightRecords.records)) {
+      return noFlightsAlert;
+    }
     return flightSelectionTable;
   }
 
@@ -43,6 +47,12 @@ function FlightSelectionModal({
     <AlertDanger>
       Something went wrong while loading flight records. Try again later.
     </AlertDanger>
+  );
+
+  const noFlightsAlert = (
+    <AlertInfo>
+      You haven't added any flights yet.
+    </AlertInfo>
   );
 
   const flightSelectionTable = (
