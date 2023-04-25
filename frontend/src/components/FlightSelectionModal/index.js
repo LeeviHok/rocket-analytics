@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
 import AlertDanger from '../AlertDanger';
+import AlertInfo from '../AlertInfo';
 import FlightSelectionTable from '../FlightSelectionTable';
 import LoadingButton from '../LoadingButton';
 
@@ -29,7 +30,10 @@ function FlightSelectionModal({
   }
 
   function renderModalBody() {
-    if (flightRecords.error) {
+    if (flightRecords.isLoading) {
+      return flightSelectionTable;
+    }
+    else if (flightRecords.error) {
       return loadingErrorAlert;
     }
     return flightSelectionTable;
@@ -44,6 +48,7 @@ function FlightSelectionModal({
   const flightSelectionTable = (
     <FlightSelectionTable
       flightRecords={flightRecords.records}
+      isLoading={flightRecords.isLoading}
       selectedFlightRecordId={selectedFlightRecordId}
       handleSelect={setSelectedFlightRecordId}
     />
