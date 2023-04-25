@@ -1,0 +1,24 @@
+# Docker
+**/.dockerignore
+**/Dockerfile
+**/docker-compose.yml
+
+# Git
+**/.git
+**/.gitignore
+
+# Python
+**/.venv
+
+# React
+**/build
+**/node_modules
+
+# Generic files
+**/.env
+**/*.md
+**/README*
+
+# Project specific files
+cloudformation
+images
