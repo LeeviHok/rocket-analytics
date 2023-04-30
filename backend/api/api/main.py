@@ -22,31 +22,16 @@ def get_db():
     finally:
         db.close()
 
-@prefix_router.get('/records', response_model=list[schemas.FlightRecord])
-def get_flight_records(db: Session = Depends(get_db)):
-    return crud.get_flight_records(db)
+@prefix_router.post('/flights', response_model=schemas.FlightMetadata)
+def create_flight(data: schemas.FlightCreate, db: Session = Depends(get_db)):
+    return crud.create_flight(db, data)
 
-@prefix_router.post('/records', response_model=schemas.FlightRecord)
-def create_flight_record(
-    record: schemas.FlightRecordCreate,
-    db: Session = Depends(get_db),
-):
-    return crud.create_flight_record(db, record)
+@prefix_router.get('/flights', response_model=list[schemas.FlightMetadata])
+def get_flight_metadata_list(db: Session = Depends(get_db)):
+    return crud.get_flight_metadata_list(db)
 
-@prefix_router.get('/records/{record_id}', response_model=schemas.FlightRecord)
-def get_flight_record(record_id: int, db: Session = Depends(get_db)):
-    return crud.get_flight_record(db, record_id)
-
-@prefix_router.get('/records/{record_id}/data', response_model=schemas.FlightData)
-def get_flight_data(record_id: int, db: Session = Depends(get_db)):
-    return crud.get_flight_data(db, record_id)
-
-@prefix_router.post('/records/{record_id}/data', response_model=schemas.FlightData)
-def create_flight_data(
-    record_id: int,
-    data: schemas.FlightDataCreate,
-    db: Session = Depends(get_db)
-):
-    return crud.create_flight_data(db, record_id, data)
+@prefix_router.get('/flights/{flight_id}', response_model=schemas.Flight)
+def get_flight(flight_id: int, db: Session = Depends(get_db)):
+    return crud.get_flight(db, flight_id)
 
 app.include_router(prefix_router)

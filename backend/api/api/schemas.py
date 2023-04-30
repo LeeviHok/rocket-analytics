@@ -4,7 +4,19 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 
-class FlightDataBase(BaseModel):
+class FlightMetadataBase(BaseModel):
+    flight_datetime: datetime
+    rocket_name: str
+
+
+class FlightMetadata(FlightMetadataBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class FlightBase(FlightMetadataBase, BaseModel):
     time: list[Decimal]
     accel_axial: list[Decimal]
     accel_lateral: list[Decimal]
@@ -19,30 +31,13 @@ class FlightDataBase(BaseModel):
     voltage_pyro_4: list[Decimal]
 
 
-class FlightDataCreate(FlightDataBase):
+class FlightCreate(FlightBase):
     pass
 
 
-class FlightData(FlightDataBase):
-    id: int
+class Flight(FlightMetadata, FlightBase):
     altitude_asl: list[Decimal]
     altitude_agl: list[Decimal]
-
-    class Config:
-        orm_mode = True
-
-
-class FlightRecordBase(BaseModel):
-    rocket_name: str
-    flight_datetime: datetime
-
-
-class FlightRecordCreate(FlightRecordBase):
-    pass
-
-
-class FlightRecord(FlightRecordBase):
-    id: int
 
     class Config:
         orm_mode = True

@@ -46,7 +46,7 @@ function useFlightRecordStorage() {
         records: flightRecords.records,
       });
 
-      const records = await fetchData('/api/records');
+      const records = await fetchData('/api/flights');
       const recordDict = records.reduce((prev, record) => ({
         ...prev,
         [record.id]: {
@@ -85,7 +85,7 @@ function useFlightRecordStorage() {
       });
 
       if (!flightDataExists(flightRecordId)) {
-        const data = await fetchData(`/api/records/${flightRecordId}/data`);
+        const data = await fetchData(`/api/flights/${flightRecordId}`);
         flightDataStore.current[flightRecordId] = data;
       }
 
