@@ -20,13 +20,7 @@ def create_flight(db: Session, data: schemas.FlightCreate):
         flight.altitude_agl.append(altitude_agl)
 
     db.add(flight)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=400, detail='Failed to create flight record.'
-        )
+    db.commit()
 
     db.refresh(flight)
     return flight
