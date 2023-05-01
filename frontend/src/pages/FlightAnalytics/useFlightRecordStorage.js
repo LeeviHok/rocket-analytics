@@ -10,6 +10,7 @@ import {
 function useFlightRecordStorage() {
   // Initially selected flight data before any actual data is selected
   const initialFlightData = {
+    id: null,
     time: (Array.from(Array(300).keys()).map(n => n/10)),
     accel_axial: [],
     accel_lateral: [],
