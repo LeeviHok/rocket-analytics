@@ -7,7 +7,7 @@ import FlightChart from '../../components/FlightChart';
 import FlightCreationModal from '../../components/FlightCreationModal';
 import FlightSelectionModal from '../../components/FlightSelectionModal';
 import useIsVisible from '../../hooks/useIsVisible';
-import useFlightRecordStorage from './useFlightRecordStorage';
+import useFlightRecords from './useFlightRecords';
 
 function FlightAnalytics() {
   const [
@@ -16,7 +16,7 @@ function FlightAnalytics() {
     createFlightRecord,
     refreshFlightRecords,
     selectFlightData,
-  ] = useFlightRecordStorage();
+  ] = useFlightRecords();
 
   const [
     isSelectionModalVisible,

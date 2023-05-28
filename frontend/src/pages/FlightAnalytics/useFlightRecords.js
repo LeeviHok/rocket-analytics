@@ -8,7 +8,7 @@ import {
  } from '../../helpers/fetchData';
  import flightDataParser from './flightDataParser';
 
-function useFlightRecordStorage() {
+function useFlightRecords() {
   const [flightData, setFlightData] = useState({
     error: null,
     isLoading: false,
@@ -131,4 +131,4 @@ function useFlightRecordStorage() {
   ];
 }
 
-export default useFlightRecordStorage;
+export default useFlightRecords;
