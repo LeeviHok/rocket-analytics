@@ -8,28 +8,10 @@ import {
  } from '../../helpers/fetchData';
 
 function useFlightRecordStorage() {
-  // Initially selected flight data before any actual data is selected
-  const initialFlightData = {
-    id: null,
-    time: (Array.from(Array(300).keys()).map(n => n/10)),
-    accel_axial: [],
-    accel_lateral: [],
-    pressure: [],
-    current: [],
-    temperature: [],
-    velocity: [],
-    voltage_battery: [],
-    voltage_pyro_apogee: [],
-    voltage_pyro_main: [],
-    voltage_pyro_3: [],
-    voltage_pyro_4: [],
-    altitude_asl: [],
-    altitude_agl: [],
-  }
   const [flightData, setFlightData] = useState({
     error: null,
     isLoading: false,
-    data: initialFlightData,
+    data: null,
   });
   const [flightRecords, setFlightRecords] = useState({
     error: null,
@@ -101,7 +83,7 @@ function useFlightRecordStorage() {
         setFlightData({
           error: e,
           isLoading: false,
-          data: initialFlightData,
+          data: null,
         });
       }
       throw e;
