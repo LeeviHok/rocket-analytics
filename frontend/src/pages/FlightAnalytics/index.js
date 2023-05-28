@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 
 import AlertDanger from '../../components/AlertDanger';
 import FlightChart from '../../components/FlightChart';
+import FlightCreationModal from '../../components/FlightCreationModal';
 import FlightSelectionModal from '../../components/FlightSelectionModal';
 import useIsVisible from '../../hooks/useIsVisible';
 import useFlightRecordStorage from './useFlightRecordStorage';
@@ -12,14 +13,21 @@ function FlightAnalytics() {
   const [
     flightData,
     flightRecords,
+    createFlightRecord,
     refreshFlightRecords,
     selectFlightData,
   ] = useFlightRecordStorage();
 
   const [
-    isModalVisible,
-    showModal,
-    hideModal,
+    isSelectionModalVisible,
+    showSelectionModal,
+    hideSelectionModal,
+  ] = useIsVisible(false);
+
+  const [
+    isCreationModalVisible,
+    showCreationModal,
+    hideCreationModal,
   ] = useIsVisible(false);
 
   // Fetch flight records on first component render
@@ -39,13 +47,19 @@ function FlightAnalytics() {
       {flightData.error && flightDataLoadingErrorAlert}
       <FlightChart flightData={flightData.data} />
       <FlightSelectionModal
-        isVisible={isModalVisible}
+        isVisible={isSelectionModalVisible}
         flightData={flightData}
         flightRecords={flightRecords}
         selectFlightData={selectFlightData}
-        handleModalClose={hideModal}
+        handleModalClose={hideSelectionModal}
       />
-      <Button onClick={showModal}>Select flight</Button>
+      <FlightCreationModal
+        isVisible={isCreationModalVisible}
+        handleFlightCreation={createFlightRecord}
+        handleModalClose={hideCreationModal}
+      />
+      <Button className="me-3" onClick={showSelectionModal}>Select flight</Button>
+      <Button onClick={showCreationModal}>Create flight</Button>
     </>
   );
 }

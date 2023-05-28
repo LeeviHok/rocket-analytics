@@ -6,6 +6,7 @@ import {
   isNetworkError,
   isServerError,
  } from '../../helpers/fetchData';
+ import flightDataParser from './flightDataParser';
 
 function useFlightRecordStorage() {
   const [flightData, setFlightData] = useState({
@@ -19,6 +20,32 @@ function useFlightRecordStorage() {
     records: {},
   });
   const flightDataStore = useRef({});
+
+  async function createFlightRecord(metadata, flightDataCsv) {
+    const flightData = await flightDataParser(flightDataCsv);
+    const payload = {
+      rocket_name: metadata.rocketName,
+      flight_datetime: metadata.flightDatetime.toISOString(),
+      ...flightData,
+    };
+
+    try {
+      var record = await fetchData('/api/flights', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      });
+    }
+    catch (e) {
+      if (isClientError(e) || isNetworkError(e) || isServerError(e)) {
+        throw new Error('Failed to create flight record');
+      }
+      throw e;
+    }
+
+    await refreshFlightRecords();
+    await selectFlightData(record.id);
+  }
 
   // Fetches and updates flight records
   async function refreshFlightRecords() {
@@ -98,6 +125,7 @@ function useFlightRecordStorage() {
   return [
     flightData,
     flightRecords,
+    createFlightRecord,
     refreshFlightRecords,
     selectFlightData,
   ];
