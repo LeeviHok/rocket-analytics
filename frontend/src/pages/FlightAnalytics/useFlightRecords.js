@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-import { 
+import {
   fetchData,
   isClientError,
   isNetworkError,
