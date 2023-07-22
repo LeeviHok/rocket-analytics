@@ -36,7 +36,7 @@ WORKDIR /home/appuser
 USER appuser
 
 # Copy the application software
-COPY ./backend/api/api ./api
+COPY ./backend/api/app ./app
 
 # Start the application
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, Numeric, String
 from sqlalchemy.types import ARRAY
 
-from .database import Base
+from ..common.database import Base
 
 
 class Flight(Base):
