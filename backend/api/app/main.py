@@ -2,6 +2,7 @@ from fastapi import APIRouter, FastAPI
 
 from .common.database import Base, engine
 from .flight_analytics.endpoints import router as flight_analytics_router
+from .users.endpoints import router as users_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,5 +16,6 @@ app = FastAPI(docs_url=DOCS_URL, redoc_url=REDOC_URL, openapi_url=OPENAPI_URL)
 prefix_router = APIRouter(prefix=API_PREFIX)
 
 prefix_router.include_router(flight_analytics_router)
+prefix_router.include_router(users_router)
 
 app.include_router(prefix_router)
