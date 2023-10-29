@@ -13,7 +13,7 @@ class FlightMetadata(FlightMetadataBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class FlightBase(FlightMetadataBase, BaseModel):
@@ -40,4 +40,4 @@ class Flight(FlightMetadata, FlightBase):
     altitude_agl: list[Decimal]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
