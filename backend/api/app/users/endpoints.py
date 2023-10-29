@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 
 from . import crud, user, schemas
+from .auth.decorators import authenticate
+from .auth.permission import Permission
 from ..common.database import SessionLocal
 
 router = APIRouter()
@@ -14,6 +16,7 @@ def get_db():
         db.close()
 
 @router.post('/users', status_code=204)
+@authenticate(permissions=[Permission.CREATE_USER])
 def register(
     credentials: schemas.UserCredentials,
     db: Session = Depends(get_db),
@@ -44,6 +47,7 @@ def log_in(
     response.set_cookie(key='id', value=session_id, httponly=True)
 
 @router.delete('/users/me', status_code=204)
+@authenticate()
 def delete_user(
     request: Request,
     response: Response,
@@ -62,6 +66,7 @@ def delete_user(
     response.delete_cookie('id', httponly=True)
 
 @router.delete('/users/sessions/me', status_code=204)
+@authenticate()
 def log_out(
     request: Request,
     response: Response,
