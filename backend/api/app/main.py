@@ -17,8 +17,15 @@ app = FastAPI(docs_url=DOCS_URL, redoc_url=REDOC_URL, openapi_url=OPENAPI_URL)
 app.add_middleware(AuthorizationMiddleware)
 
 prefix_router = APIRouter(prefix=API_PREFIX)
-
-prefix_router.include_router(flight_analytics_router)
-prefix_router.include_router(users_router)
+prefix_router.include_router(
+    flight_analytics_router,
+    prefix='/flight_analytics',
+    tags=['Flight analytics'],
+)
+prefix_router.include_router(
+    users_router,
+    prefix='/users',
+    tags=['Users'],
+)
 
 app.include_router(prefix_router)

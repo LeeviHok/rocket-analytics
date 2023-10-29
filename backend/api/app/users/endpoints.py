@@ -15,7 +15,7 @@ def get_db():
     finally:
         db.close()
 
-@router.post('/users', status_code=204)
+@router.post('/', status_code=204)
 @authenticate(permissions=[Permission.CREATE_USER])
 def register(
     credentials: schemas.UserCredentials,
@@ -29,7 +29,7 @@ def register(
             detail='Email address is already in use.',
         )
 
-@router.post('/users/sessions', status_code=204)
+@router.post('/sessions', status_code=204)
 def log_in(
     credentials: schemas.UserCredentials,
     response: Response,
@@ -46,7 +46,7 @@ def log_in(
     # Remember to set this cookie to secure before deployment
     response.set_cookie(key='id', value=session_id, httponly=True)
 
-@router.delete('/users/me', status_code=204)
+@router.delete('/me', status_code=204)
 @authenticate()
 def delete_user(
     request: Request,
@@ -65,7 +65,7 @@ def delete_user(
     # Remember to set this cookie to secure before deployment
     response.delete_cookie('id', httponly=True)
 
-@router.delete('/users/sessions/me', status_code=204)
+@router.delete('/sessions/me', status_code=204)
 @authenticate()
 def log_out(
     request: Request,

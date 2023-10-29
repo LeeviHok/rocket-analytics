@@ -30,7 +30,7 @@ function useFlightRecords() {
     };
 
     try {
-      var record = await fetchData('/api/flights', {
+      var record = await fetchData('/api/flight_analytics/flights', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload),
@@ -56,7 +56,7 @@ function useFlightRecords() {
         records: flightRecords.records,
       });
 
-      const records = await fetchData('/api/flights');
+      const records = await fetchData('/api/flight_analytics/flights');
       const recordDict = records.reduce((prev, record) => ({
         ...prev,
         [record.id]: {
@@ -95,7 +95,9 @@ function useFlightRecords() {
       });
 
       if (!flightDataExists(flightRecordId)) {
-        const data = await fetchData(`/api/flights/${flightRecordId}`);
+        const data = await fetchData(
+          `/api/flight_analytics/flights/${flightRecordId}`,
+        );
         flightDataStore.current[flightRecordId] = data;
       }
 
