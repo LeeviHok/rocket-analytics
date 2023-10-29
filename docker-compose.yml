@@ -1,32 +1,6 @@
 version: "3.8"
 
 services:
-  api:
-    image: ${DOCKER_REGISTRY:?}/rocket-analytics/api
-    build:
-      context: .
-      dockerfile: ./backend/api/Dockerfile
-    restart: always
-    ports:
-      - "8000:8000"
-    environment:
-      PSQL_USER: ${PSQL_USER:?}
-      PSQL_PWD: ${PSQL_PWD:?}
-      PSQL_DB: ${PSQL_DB:?}
-      PSQL_DOMAIN: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  nginx:
-    image: ${DOCKER_REGISTRY:?}/rocket-analytics/nginx
-    build:
-      context: .
-      dockerfile: ./backend/nginx/Dockerfile
-    restart: always
-    ports:
-      - "80:80"
-
   postgres:
     image: ${DOCKER_REGISTRY:?}/rocket-analytics/postgres
     build:
@@ -39,8 +13,6 @@ services:
       POSTGRES_USER: ${PSQL_USER:?}
       POSTGRES_PASSWORD: ${PSQL_PWD:?}
       POSTGRES_DB: ${PSQL_DB:?}
-    volumes:
-      - /data:/var/lib/postgresql/data/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PSQL_USER}"]
       interval: 5s

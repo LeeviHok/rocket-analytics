@@ -1,0 +1,30 @@
+services:
+  api:
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/api
+    build:
+      context: .
+      dockerfile: ./backend/api/Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      PSQL_USER: ${PSQL_USER:?}
+      PSQL_PWD: ${PSQL_PWD:?}
+      PSQL_DB: ${PSQL_DB:?}
+      PSQL_DOMAIN: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: ${DOCKER_REGISTRY:?}/rocket-analytics/nginx
+    build:
+      context: .
+      dockerfile: ./backend/nginx/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+
+  postgres:
+    volumes:
+      - /data:/var/lib/postgresql/data/

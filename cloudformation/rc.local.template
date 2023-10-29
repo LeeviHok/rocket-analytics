@@ -9,6 +9,7 @@ REGION="*Region*"
 
 GIT_REPOSITORY_PATH=/home/ubuntu/rocket-analytics
 COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
+COMPOSE_FILE_PROD="${GIT_REPOSITORY_PATH}/docker-compose-prod.yml"
 ENV_FILE="${GIT_REPOSITORY_PATH}/.env"
 
 install_docker () {
@@ -104,7 +105,7 @@ mount_db_volume () {
 
 # Install and start the application
 install_application
-docker compose -f $COMPOSE_FILE up -d --no-build
+docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_PROD up -d --no-build
 
 # This script needs to be executed only once when server is created
 rm $0
