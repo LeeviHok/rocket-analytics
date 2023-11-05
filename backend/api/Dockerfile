@@ -37,6 +37,7 @@ USER appuser
 
 # Copy the application software
 COPY ./backend/api/app ./app
+COPY ./backend/api/alembic.ini ./alembic.ini
 
 # Start the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,11 +1,12 @@
+from alembic import command
+from alembic.config import Config
 from fastapi import APIRouter, FastAPI
 
-from .common.database import Base, engine
 from .flight_analytics.endpoints import router as flight_analytics_router
 from .users.auth.middleware import AuthorizationMiddleware
 from .users.endpoints import router as users_router
 
-Base.metadata.create_all(bind=engine)
+command.upgrade(Config('alembic.ini'), 'head')
 
 # Prefix for all endpoints and documentation
 API_PREFIX = '/api'
