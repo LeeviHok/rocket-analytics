@@ -59,6 +59,7 @@ Parameters:
   PostgresPassword:
     Description: Password for the PostgreSQL user
     Type: String
+    NoEcho: true
 
   PostgresDatabase:
     Description: Name for the PostgreSQL database
