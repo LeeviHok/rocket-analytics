@@ -52,12 +52,12 @@ Parameters:
     Type: String
 
   PostgresUsername:
-    Description: Username for the PostgreSQL database
+    Description: Username for the PostgreSQL database user
     Type: String
     Default: postgres
 
   PostgresPassword:
-    Description: Password for the PostgreSQL user
+    Description: Password for the PostgreSQL database user
     Type: String
     NoEcho: true
 
