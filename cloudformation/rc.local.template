@@ -65,6 +65,7 @@ install_application () {
   echo "PSQL_PWD=$PSQL_PWD" | tee -a $ENV_FILE
   echo "PSQL_DB=$PSQL_DB" | tee -a $ENV_FILE
   echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
+  echo "AWS_REGION=$REGION" | tee -a $ENV_FILE
 
   mount_db_volume
 

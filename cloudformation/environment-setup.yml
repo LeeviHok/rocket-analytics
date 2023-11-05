@@ -70,6 +70,15 @@ Parameters:
     Description: Enter IPv4 address which can access server over SSH
     Type: String
 
+  AdminUserEmail:
+    Description: Email address for the website administrator account
+    Type: String
+
+  AdminUserPassword:
+    Description: Password for the website administrator account
+    Type: String
+    NoEcho: true
+
 Conditions:
   HasSshIpAddress: !Not [!Equals [!Ref SshIpAddress, ""]]
 
@@ -114,6 +123,18 @@ Resources:
           Action: ssm:GetParameter
           Resource: "*"
 
+  GetSecretValuePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "SecretsManagerGetValue-${Region}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Sid: GetSecretValue
+          Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource: "*"
+
   # IAM Roles
   ServerRole:
     Type: AWS::IAM::Role
@@ -131,6 +152,7 @@ Resources:
       ManagedPolicyArns:
         - !Ref EcrPullPolicy
         - !Ref SsmReadParameterPolicy
+        - !Ref GetSecretValuePolicy
 
   # EIP addresses
   ServerIpAddress:
@@ -276,6 +298,17 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Sub "${AWS::AccountId}.dkr.ecr.${Region}.amazonaws.com"
+
+  # Secrets Manager secrets
+  AdminUserSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Credentials for the website administrator account
+      Name: AdminUser
+      SecretString: !Sub '{
+        "email": "${AdminUserEmail}",
+        "password": "${AdminUserPassword}"
+      }'
 
   # ECR repositories
   EcrRepositoryApi:

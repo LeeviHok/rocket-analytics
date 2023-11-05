@@ -8,6 +8,8 @@ services:
     ports:
       - "8000:8000"
     environment:
+      APP_ENV: prod
+      AWS_REGION: ${AWS_REGION:?}
       PSQL_USER: ${PSQL_USER:?}
       PSQL_PWD: ${PSQL_PWD:?}
       PSQL_DB: ${PSQL_DB:?}
