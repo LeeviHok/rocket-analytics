@@ -35,7 +35,7 @@ const options = {
         autoSkipPadding: 20, // Add spacing between x-axis labels
         callback: function(_, index) {
           const value = this.getLabelForValue(index); // Show x-axis labels
-          return value.toFixed(2);                    // with 2 decimal places
+          return parseFloat(value).toFixed(2);        // with 2 decimal places
         },
       },
     },
