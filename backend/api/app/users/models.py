@@ -49,6 +49,7 @@ class User(Base):
         secondary=user_to_role,
         back_populates='users',
     )
+    flights = relationship('Flight', back_populates='user')
 
     def __repr__(self):
         return f'User ({self.id}) {self.email}'

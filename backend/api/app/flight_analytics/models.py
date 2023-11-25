@@ -1,4 +1,5 @@
-from sqlalchemy import Column, DateTime, Integer, Numeric, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import ARRAY
 
 from ..common.database import Base
@@ -30,6 +31,9 @@ class Flight(Base):
     # Derived data from the altimeter measurements
     altitude_asl = Column(ARRAY(Numeric(9, 3)), nullable=False)        # m
     altitude_agl = Column(ARRAY(Numeric(9, 3)), nullable=False)        # m
+
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    user = relationship('User', back_populates='flights')
 
     def __repr__(self):
         return self.rocket_name

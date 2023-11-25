@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .standard_atmosphere import StandardAtmosphere as SA
 
-def create_flight(db: Session, data: schemas.FlightCreate):
+def create_flight(db: Session, data: schemas.FlightCreate, user_id = int):
     flight = models.Flight(**data.dict())
+    flight.user_id = user_id
 
     # Calculate and add derived data
     flight.altitude_asl = []
@@ -24,8 +25,12 @@ def create_flight(db: Session, data: schemas.FlightCreate):
     db.refresh(flight)
     return flight
 
-def get_flight(db: Session, flight_id: int):
-    flight = db.get(models.Flight, flight_id)
+def get_flight(db: Session, flight_id: int, user_id = int):
+    flight = db.scalar(
+        select(models.Flight)
+        .where(models.Flight.id == flight_id)
+        .where(models.Flight.user_id == user_id)
+    )
     if not flight:
         raise HTTPException(
             status_code=404,
@@ -33,11 +38,13 @@ def get_flight(db: Session, flight_id: int):
         )
     return flight
 
-def get_flight_metadata_list(db: Session):
+def get_flight_metadata_list(db: Session, user_id: int):
     return db.execute(
         select(
             models.Flight.id,
             models.Flight.flight_datetime,
             models.Flight.rocket_name,
-        ).order_by(models.Flight.flight_datetime)
+        )
+        .where(models.Flight.user_id == user_id)
+        .order_by(models.Flight.flight_datetime)
     ).all()
