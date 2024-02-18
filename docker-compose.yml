@@ -10,11 +10,11 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: ${PSQL_USER:?}
-      POSTGRES_PASSWORD: ${PSQL_PWD:?}
-      POSTGRES_DB: ${PSQL_DB:?}
+      POSTGRES_USER: ${POSTGRES_USERNAME:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DATABASE:?}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PSQL_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
       interval: 5s
       timeout: 5s
       retries: 5

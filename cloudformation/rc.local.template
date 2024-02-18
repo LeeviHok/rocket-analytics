@@ -71,9 +71,9 @@ install_application () {
 
   # Create and populate '.env' file for Docker Compose
   touch $ENV_FILE && chmod 600 $ENV_FILE
-  echo "PSQL_USER=$POSTGRES_USERNAME" | tee -a $ENV_FILE
-  echo "PSQL_PWD=$POSTGRES_PASSWORD" | tee -a $ENV_FILE
-  echo "PSQL_DB=$POSTGRES_DATABASE" | tee -a $ENV_FILE
+  echo "POSTGRES_USERNAME=$POSTGRES_USERNAME" | tee -a $ENV_FILE
+  echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" | tee -a $ENV_FILE
+  echo "POSTGRES_DATABASE=$POSTGRES_DATABASE" | tee -a $ENV_FILE
   echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
   echo "AWS_REGION=$REGION" | tee -a $ENV_FILE
 

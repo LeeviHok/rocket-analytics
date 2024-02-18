@@ -10,10 +10,10 @@ services:
     environment:
       APP_ENV: prod
       AWS_REGION: ${AWS_REGION:?}
-      PSQL_USER: ${PSQL_USER:?}
-      PSQL_PWD: ${PSQL_PWD:?}
-      PSQL_DB: ${PSQL_DB:?}
-      PSQL_DOMAIN: postgres
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:?}
+      POSTGRES_DOMAIN: postgres
     depends_on:
       postgres:
         condition: service_healthy
