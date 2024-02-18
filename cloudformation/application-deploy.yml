@@ -1,3 +1,15 @@
+Parameters:
+  InstanceType:
+    Description: Select server instance type (Not all types are available in all regions)
+    Type: String
+    Default: t3.small
+    AllowedValues:
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+
 Resources:
   ServerIpAssociation:
     Type: AWS::EC2::EIPAssociation
@@ -11,7 +23,7 @@ Resources:
       AvailabilityZone: "{{resolve:ssm:ServiceAvailabilityZone}}"
       IamInstanceProfile: "ServerInstanceProfile-{{resolve:ssm:ServiceRegion}}"
       ImageId: "{{resolve:ssm:ServerAmiId}}"
-      InstanceType: "{{resolve:ssm:ServerInstanceType}}"
+      InstanceType: !Ref InstanceType
       KeyName: RocketAnalyticsSsh
       SecurityGroupIds:
         - "{{resolve:ssm:ServerSecurityGroupId}}"

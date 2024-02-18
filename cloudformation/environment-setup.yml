@@ -36,17 +36,6 @@ Parameters:
     Type: String
     Default: main
 
-  InstanceType:
-    Description: Select server instance type (Not all types are available in all regions)
-    Type: String
-    Default: t3.small
-    AllowedValues:
-      - t3.nano
-      - t3.micro
-      - t3.small
-      - t3.medium
-      - t3.large
-
   AmiId:
     Description: Enter AMI ID (Use Ubuntu Server 22.04 LTS)
     Type: String
@@ -198,16 +187,6 @@ Resources:
       Tier: Standard
       Type: String
       Value: !Ref GitBranch
-
-  InstanceTypeParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      DataType: text
-      Description: EC2 server instance type
-      Name: ServerInstanceType
-      Tier: Standard
-      Type: String
-      Value: !Ref InstanceType
 
   SecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
