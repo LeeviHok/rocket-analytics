@@ -1,15 +1,26 @@
 #!/bin/bash
 
-# *xxxx* will be replaced by actual values when rc.local is created
-DB_VOLUME_ID="*DatabaseVolumeId*"
-GIT_REPOSITORY="*GitRepository*"
-GIT_BRANCH="*GitBranch*"
-REGION="*Region*"
+main () {
+  DEBIAN_FRONTEND=noninteractive apt-get -y update
+  DEBIAN_FRONTEND=noninteractive apt-get -y install awscli
 
-GIT_REPOSITORY_PATH=/home/ubuntu/rocket-analytics
-COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
-COMPOSE_FILE_PROD="${GIT_REPOSITORY_PATH}/docker-compose-prod.yml"
-ENV_FILE="${GIT_REPOSITORY_PATH}/.env"
+  REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+  DB_VOLUME_ID=$(get_ssm_parameter "DatabaseVolumeId")
+  GIT_REPOSITORY=$(get_ssm_parameter "GitRepository")
+  GIT_BRANCH=$(get_ssm_parameter "GitBranch")
+
+  GIT_REPOSITORY_PATH=/home/ubuntu/rocket-analytics
+  COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
+  COMPOSE_FILE_PROD="${GIT_REPOSITORY_PATH}/docker-compose-prod.yml"
+  ENV_FILE="${GIT_REPOSITORY_PATH}/.env"
+
+  # Install and start the application
+  install_application
+  docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_PROD up -d --no-build
+
+  # This script needs to be executed only once when server is created
+  rm $0
+}
 
 install_docker () {
   DEBIAN_FRONTEND=noninteractive apt-get -y update
@@ -41,7 +52,7 @@ install_docker () {
 install_application () {
   # Install software packages
   DEBIAN_FRONTEND=noninteractive apt-get -y update
-  DEBIAN_FRONTEND=noninteractive apt-get -y install awscli git
+  DEBIAN_FRONTEND=noninteractive apt-get -y install git
   install_docker
 
   # Clone git repository to get Docker Compose file
@@ -79,6 +90,12 @@ get_db_volume_name () {
   lsblk -p -o NAME,SERIAL | awk -v id=$id_without_hyphen '$2 == id {print $1}'
 }
 
+# $1: Parameter name
+get_ssm_parameter () {
+  echo $(aws ssm get-parameter --name $1 --region $REGION \
+    --query 'Parameter.Value' --output text)
+}
+
 db_volume_is_formatted () {
   filesystem=$(lsblk -p -o NAME,FSTYPE | \
     awk -v name=$(get_db_volume_name) '$1 == name {print $2}')
@@ -102,9 +119,4 @@ mount_db_volume () {
   mount $(get_db_volume_name) /data
 }
 
-# Install and start the application
-install_application
-docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_PROD up -d --no-build
-
-# This script needs to be executed only once when server is created
-rm $0
+main

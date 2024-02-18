@@ -67,13 +67,6 @@ Resources:
             # Create 'rc.local' from the template file
             template=/tmp/rocket-analytics/cloudformation/rc.local.template
             cp $template /etc/rc.local && chmod 700 /etc/rc.local
-
-            # Substitute variable placeholders with actual values
-            sed -i 's,\*AccountId\*,${AWS::AccountId},g' /etc/rc.local
-            sed -i 's,\*DatabaseVolumeId\*,${DatabaseVolumeId},g' /etc/rc.local
-            sed -i 's,\*GitRepository\*,${GitRepository},g' /etc/rc.local
-            sed -i 's,\*GitBranch\*,${GitBranch},g' /etc/rc.local
-            sed -i 's,\*Region\*,${Region},g' /etc/rc.local
           }
 
           # Update software packages (requires reboot)
