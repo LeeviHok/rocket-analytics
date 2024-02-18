@@ -1,78 +1,49 @@
-Parameters:
-  AmiId:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServerAmiId
-
-  AvailabilityZone:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServiceAvailabilityZone
-
-  DatabaseVolumeId:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: DatabaseVolumeId
-
-  GitRepository:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: GitRepository
-
-  GitBranch:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: GitBranch
-
-  InstanceType:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServerInstanceType
-
-  IpAddressId:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServerIpAddressId
-
-  Region:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServiceRegion
-
-  SecurityGroupId:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: ServerSecurityGroupId
-
 Resources:
   ServerIpAssociation:
     Type: AWS::EC2::EIPAssociation
     Properties:
-      AllocationId: !Ref IpAddressId
+      AllocationId: "{{resolve:ssm:ServerIpAddressId}}"
       InstanceId: !Ref Server
 
   Server:
     Type: AWS::EC2::Instance
     Properties:
-      AvailabilityZone: !Ref AvailabilityZone
-      IamInstanceProfile: !Sub "ServerInstanceProfile-${Region}"
-      ImageId: !Ref AmiId
-      InstanceType: !Ref InstanceType
+      AvailabilityZone: "{{resolve:ssm:ServiceAvailabilityZone}}"
+      IamInstanceProfile: "ServerInstanceProfile-{{resolve:ssm:ServiceRegion}}"
+      ImageId: "{{resolve:ssm:ServerAmiId}}"
+      InstanceType: "{{resolve:ssm:ServerInstanceType}}"
       KeyName: RocketAnalyticsSsh
       SecurityGroupIds:
-        - !Ref SecurityGroupId
+        - "{{resolve:ssm:ServerSecurityGroupId}}"
       Volumes:
         - Device: /dev/sdf
-          VolumeId: !Ref DatabaseVolumeId
+          VolumeId: "{{resolve:ssm:DatabaseVolumeId}}"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
 
           create_auto_install_script () {
             # Clone git repository to get 'rc.local.template' file
-            git clone ${GitRepository} /tmp/rocket-analytics
-            git -C /tmp/rocket-analytics checkout ${GitBranch}
+            git_repository=$(get_ssm_parameter "GitRepository")
+            git_branch=$(get_ssm_parameter "GitBranch")
+            git clone $git_repository /tmp/rocket-analytics
+            git -C /tmp/rocket-analytics checkout $git_branch
 
             # Create 'rc.local' from the template file
             template=/tmp/rocket-analytics/cloudformation/rc.local.template
             cp $template /etc/rc.local && chmod 700 /etc/rc.local
           }
 
+          # $1: Parameter name
+          get_ssm_parameter () {
+            echo $(aws ssm get-parameter --name $1 --region ${AWS::Region} \
+              --query 'Parameter.Value' --output text)
+          }
+
           # Update software packages (requires reboot)
           DEBIAN_FRONTEND=noninteractive apt-get -y update
           DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
-          DEBIAN_FRONTEND=noninteractive apt-get -y install git
+          DEBIAN_FRONTEND=noninteractive apt-get -y install awscli git
 
           create_auto_install_script
           reboot
