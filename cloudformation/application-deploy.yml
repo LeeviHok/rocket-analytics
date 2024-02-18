@@ -1,6 +1,6 @@
 Parameters:
-  InstanceType:
-    Description: Select server instance type (Not all types are available in all regions)
+  WebServerInstanceType:
+    Description: Select web server instance type (Not all types are available in all regions)
     Type: String
     Default: t3.small
     AllowedValues:
@@ -11,22 +11,22 @@ Parameters:
       - t3.large
 
 Resources:
-  ServerIpAssociation:
+  WebServerIpAssociation:
     Type: AWS::EC2::EIPAssociation
     Properties:
-      AllocationId: "{{resolve:ssm:ServerIpAddressId}}"
-      InstanceId: !Ref Server
+      AllocationId: "{{resolve:ssm:WebServerIpAddressId}}"
+      InstanceId: !Ref WebServer
 
-  Server:
+  WebServer:
     Type: AWS::EC2::Instance
     Properties:
-      AvailabilityZone: "{{resolve:ssm:ServiceAvailabilityZone}}"
-      IamInstanceProfile: !Sub "ServerInstanceProfile-${AWS::Region}"
-      ImageId: "{{resolve:ssm:ServerAmiId}}"
-      InstanceType: !Ref InstanceType
+      AvailabilityZone: "{{resolve:ssm:AvailabilityZone}}"
+      IamInstanceProfile: !Sub "WebServerInstanceProfile-${AWS::Region}"
+      ImageId: "{{resolve:ssm:WebServerAmiId}}"
+      InstanceType: !Ref WebServerInstanceType
       KeyName: RocketAnalyticsSsh
       SecurityGroupIds:
-        - "{{resolve:ssm:ServerSecurityGroupId}}"
+        - "{{resolve:ssm:WebServerSecurityGroupId}}"
       Volumes:
         - Device: /dev/sdf
           VolumeId: "{{resolve:ssm:DatabaseVolumeId}}"
@@ -34,7 +34,7 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          create_auto_install_script () {
+          create_setup_script () {
             # Clone git repository to get 'rc.local.template' file
             git_repository=$(get_ssm_parameter "GitRepository")
             git_branch=$(get_ssm_parameter "GitBranch")
@@ -57,5 +57,5 @@ Resources:
           DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
           DEBIAN_FRONTEND=noninteractive apt-get -y install awscli git
 
-          create_auto_install_script
+          create_setup_script
           reboot

@@ -1,34 +1,34 @@
 Parameters:
   GitRepository:
-    Description: Enter Git repository URL (eg. https://github.com/ExampleUser/repository-name.git)
+    Description: Git repository URL (eg. https://github.com/ExampleUser/repository-name.git)
     Type: String
 
   GitBranch:
-    Description: Enter git repository release branch name
+    Description: Git repository release branch name
     Type: String
     Default: main
 
-  AmiId:
-    Description: Enter AMI ID (Use Ubuntu Server 22.04 LTS)
+  WebServerAmiId:
+    Description: AMI ID for the web server (Use Ubuntu Server 22.04 LTS)
     Type: String
 
   PostgresUsername:
-    Description: Username for the PostgreSQL database user
+    Description: Username for the Postgres database user
     Type: String
     Default: postgres
 
   PostgresPassword:
-    Description: Password for the PostgreSQL database user
+    Description: Password for the Postgres database user
     Type: String
     NoEcho: true
 
   PostgresDatabase:
-    Description: Name for the PostgreSQL database
+    Description: Postgres database name
     Type: String
     Default: rockets
 
   SshIpAddress:
-    Description: Enter IPv4 address which can access server over SSH
+    Description: IPv4 address which can access web server over SSH
     Type: String
 
   AdminUserEmail:
@@ -97,10 +97,10 @@ Resources:
           Resource: "*"
 
   # IAM Roles
-  ServerRole:
+  WebServerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "Server-${AWS::Region}"
+      RoleName: !Sub "WebServer-${AWS::Region}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -116,29 +116,29 @@ Resources:
         - !Ref GetSecretValuePolicy
 
   # EIP addresses
-  ServerIpAddress:
+  WebServerIpAddress:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
 
-  # Web server instance profile
-  ServerInstanceProfile:
+  # Instance profiles
+  WebServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub "ServerInstanceProfile-${AWS::Region}"
+      InstanceProfileName: !Sub "WebServerInstanceProfile-${AWS::Region}"
       Roles:
-        - Ref: ServerRole
+        - Ref: WebServerRole
 
   # SSM Parameter Store parameters
-  AmiIdParameter:
+  WebServerAmiIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: EC2 server instance AMI ID
-      Name: ServerAmiId
+      Description: Web server EC2 instance AMI ID
+      Name: WebServerAmiId
       Tier: Standard
       Type: String
-      Value: !Ref AmiId
+      Value: !Ref WebServerAmiId
 
   GitRepositoryParameter:
     Type: AWS::SSM::Parameter
@@ -160,32 +160,32 @@ Resources:
       Type: String
       Value: !Ref GitBranch
 
-  SecurityGroupIdParameter:
+  WebServerSecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Security group ID for the web server
-      Name: ServerSecurityGroupId
+      Description: Web server security group ID
+      Name: WebServerSecurityGroupId
       Tier: Standard
       Type: String
-      Value: !GetAtt ServerSecurityGroup.GroupId
+      Value: !GetAtt WebServerSecurityGroup.GroupId
 
-  ServerIpAddressIdParameter:
+  WebServerIpAddressIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Elastic IP address ID for the web server
-      Name: ServerIpAddressId
+      Description: Web server Elastic IP address ID
+      Name: WebServerIpAddressId
       Tier: Standard
       Type: String
-      Value: !GetAtt ServerIpAddress.AllocationId
+      Value: !GetAtt WebServerIpAddress.AllocationId
 
   RegionParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: AWS region for the web service
-      Name: ServiceRegion
+      Description: AWS region for CloudFormation resources
+      Name: Region
       Tier: Standard
       Type: String
       Value: !Ref AWS::Region
@@ -194,13 +194,13 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Availability zone for the web service
-      Name: ServiceAvailabilityZone
+      Description: Availability zone for CloudFormation resources
+      Name: AvailabilityZone
       Tier: Standard
       Type: String
       Value: !Select [0, Fn::GetAZs: !Ref AWS::Region]
 
-  DatabaseVolumeParameter:
+  DatabaseVolumeIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
@@ -214,8 +214,8 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Username for the PostgreSQL database
-      Name: PSQL_USER
+      Description: Postgres username
+      Name: PostgresUsername
       Tier: Standard
       Type: String
       Value: !Ref PostgresUsername
@@ -224,8 +224,8 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Password for the PostgreSQL user
-      Name: PSQL_PWD
+      Description: Postgres password
+      Name: PostgresPassword
       Tier: Standard
       Type: String
       Value: !Ref PostgresPassword
@@ -234,8 +234,8 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Name for the PostgreSQL database
-      Name: PSQL_DB
+      Description: Postgres database name
+      Name: PostgresDatabase
       Tier: Standard
       Type: String
       Value: !Ref PostgresDatabase
@@ -244,7 +244,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       DataType: text
-      Description: Base URI to the Elastic Container Registry
+      Description: Docker container registry base URI
       Name: DockerRegistry
       Tier: Standard
       Type: String
@@ -254,7 +254,7 @@ Resources:
   AdminUserSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: Credentials for the website administrator account
+      Description: Website administrator account credentials
       Name: AdminUser
       SecretString: !Sub '{
         "email": "${AdminUserEmail}",
@@ -277,7 +277,7 @@ Resources:
     Properties:
       RepositoryName: rocket-analytics/postgres
 
-  # Database volume
+  # EC2 volumes
   DatabaseVolume:
     Type: AWS::EC2::Volume
     Properties:
@@ -285,18 +285,18 @@ Resources:
       Size: 8
       VolumeType: gp3
 
-  # SSH key
+  # SSH keys
   SshKey:
     Type: AWS::EC2::KeyPair
     Properties:
       KeyName: RocketAnalyticsSsh
       KeyType: ed25519
 
-  # Security group
-  ServerSecurityGroup:
+  # Security groups
+  WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: Server
+      GroupName: WebServer
       GroupDescription: HTTP and SSH traffic to the web server
       SecurityGroupIngress:
         - Description: Open HTTP to the NGINX
@@ -308,7 +308,7 @@ Resources:
         # Create rule for SSH if IP address parameter is provided
         - !If
           - HasSshIpAddress
-          - Description: Open SSH to the EC2
+          - Description: Open SSH to the web server
             IpProtocol: tcp
             FromPort: 22
             ToPort: 22

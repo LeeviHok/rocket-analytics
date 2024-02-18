@@ -60,20 +60,20 @@ install_application () {
   git -C $GIT_REPOSITORY_PATH checkout $GIT_BRANCH
 
   # Fetch environment variables for Docker Compose
-  PSQL_USER=$(aws ssm get-parameter --name 'PSQL_USER' --region $REGION \
-    --query 'Parameter.Value' --output text)
-  PSQL_PWD=$(aws ssm get-parameter --name 'PSQL_PWD' --region $REGION \
-    --query 'Parameter.Value' --output text)
-  PSQL_DB=$(aws ssm get-parameter --name 'PSQL_DB' --region $REGION \
-    --query 'Parameter.Value' --output text)
+  POSTGRES_USERNAME=$(aws ssm get-parameter --name 'PostgresUsername' \
+    --region $REGION --query 'Parameter.Value' --output text)
+  POSTGRES_PASSWORD=$(aws ssm get-parameter --name 'PostgresPassword' \
+    --region $REGION --query 'Parameter.Value' --output text)
+  POSTGRES_DATABASE=$(aws ssm get-parameter --name 'PostgresDatabase' \
+    --region $REGION --query 'Parameter.Value' --output text)
   DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' \
     --region $REGION --query 'Parameter.Value' --output text)
 
   # Create and populate '.env' file for Docker Compose
   touch $ENV_FILE && chmod 600 $ENV_FILE
-  echo "PSQL_USER=$PSQL_USER" | tee -a $ENV_FILE
-  echo "PSQL_PWD=$PSQL_PWD" | tee -a $ENV_FILE
-  echo "PSQL_DB=$PSQL_DB" | tee -a $ENV_FILE
+  echo "PSQL_USER=$POSTGRES_USERNAME" | tee -a $ENV_FILE
+  echo "PSQL_PWD=$POSTGRES_PASSWORD" | tee -a $ENV_FILE
+  echo "PSQL_DB=$POSTGRES_DATABASE" | tee -a $ENV_FILE
   echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
   echo "AWS_REGION=$REGION" | tee -a $ENV_FILE
 
