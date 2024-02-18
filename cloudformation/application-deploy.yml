@@ -21,7 +21,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       AvailabilityZone: "{{resolve:ssm:ServiceAvailabilityZone}}"
-      IamInstanceProfile: "ServerInstanceProfile-{{resolve:ssm:ServiceRegion}}"
+      IamInstanceProfile: !Sub "ServerInstanceProfile-${AWS::Region}"
       ImageId: "{{resolve:ssm:ServerAmiId}}"
       InstanceType: !Ref InstanceType
       KeyName: RocketAnalyticsSsh

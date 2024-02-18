@@ -1,32 +1,4 @@
 Parameters:
-  Region:
-    Description: Select region where service will be hosted
-    Type: String
-    Default: eu-north-1
-    AllowedValues:
-      # US
-      - us-east-1
-      - us-east-2
-      - us-west-1
-      - us-west-2
-      # Asia
-      - ap-south-1
-      - ap-northeast-1
-      - ap-northeast-2
-      - ap-northeast-3
-      - ap-southeast-1
-      - ap-southeast-2
-      # Canada
-      - ca-central-1
-      # Europe
-      - eu-central-1
-      - eu-west-1
-      - eu-west-2
-      - eu-west-3
-      - eu-north-1
-      # South America
-      - sa-east-1
-
   GitRepository:
     Description: Enter Git repository URL (eg. https://github.com/ExampleUser/repository-name.git)
     Type: String
@@ -81,7 +53,7 @@ Resources:
       # the same template in multiple Regions."
       # They recommend adding region into the IAM resource name dynamically to
       # avoid this potentially unrecoverable error.
-      ManagedPolicyName: !Sub "EcrPull-${Region}"
+      ManagedPolicyName: !Sub "EcrPull-${AWS::Region}"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -103,7 +75,7 @@ Resources:
   SsmReadParameterPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: !Sub "SsmReadParameter-${Region}"
+      ManagedPolicyName: !Sub "SsmReadParameter-${AWS::Region}"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -115,7 +87,7 @@ Resources:
   GetSecretValuePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: !Sub "SecretsManagerGetValue-${Region}"
+      ManagedPolicyName: !Sub "SecretsManagerGetValue-${AWS::Region}"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -128,7 +100,7 @@ Resources:
   ServerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "Server-${Region}"
+      RoleName: !Sub "Server-${AWS::Region}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -153,7 +125,7 @@ Resources:
   ServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub "ServerInstanceProfile-${Region}"
+      InstanceProfileName: !Sub "ServerInstanceProfile-${AWS::Region}"
       Roles:
         - Ref: ServerRole
 
@@ -216,7 +188,7 @@ Resources:
       Name: ServiceRegion
       Tier: Standard
       Type: String
-      Value: !Ref Region
+      Value: !Ref AWS::Region
 
   AvailabilityZoneParameter:
     Type: AWS::SSM::Parameter
@@ -226,7 +198,7 @@ Resources:
       Name: ServiceAvailabilityZone
       Tier: Standard
       Type: String
-      Value: !Select [0, Fn::GetAZs: !Ref Region]
+      Value: !Select [0, Fn::GetAZs: !Ref AWS::Region]
 
   DatabaseVolumeParameter:
     Type: AWS::SSM::Parameter
@@ -276,7 +248,7 @@ Resources:
       Name: DockerRegistry
       Tier: Standard
       Type: String
-      Value: !Sub "${AWS::AccountId}.dkr.ecr.${Region}.amazonaws.com"
+      Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com"
 
   # Secrets Manager secrets
   AdminUserSecret:
