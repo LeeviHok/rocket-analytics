@@ -60,14 +60,10 @@ install_application () {
   git -C $GIT_REPOSITORY_PATH checkout $GIT_BRANCH
 
   # Fetch environment variables for Docker Compose
-  POSTGRES_USERNAME=$(aws ssm get-parameter --name 'PostgresUsername' \
-    --region $REGION --query 'Parameter.Value' --output text)
-  POSTGRES_PASSWORD=$(aws ssm get-parameter --name 'PostgresPassword' \
-    --region $REGION --query 'Parameter.Value' --output text)
-  POSTGRES_DATABASE=$(aws ssm get-parameter --name 'PostgresDatabase' \
-    --region $REGION --query 'Parameter.Value' --output text)
-  DOCKER_REGISTRY=$(aws ssm get-parameter --name 'DockerRegistry' \
-    --region $REGION --query 'Parameter.Value' --output text)
+  POSTGRES_USERNAME=$(get_ssm_parameter "PostgresUsername")
+  POSTGRES_PASSWORD=$(get_ssm_parameter "PostgresPassword")
+  POSTGRES_DATABASE=$(get_ssm_parameter "PostgresDatabase")
+  DOCKER_REGISTRY=$(get_ssm_parameter "DockerRegistry")
 
   # Create and populate '.env' file for Docker Compose
   touch $ENV_FILE && chmod 600 $ENV_FILE
