@@ -15,10 +15,17 @@ Parameters:
   PostgresUsername:
     Description: Username for the Postgres database user
     Type: String
-    Default: postgres
+    Default: rocket_analytics_user
+    AllowedPattern: ^(?!postgres$).* # Do not allow to use postgres
+    ConstraintDescription: Username postgres is reserved for the database supreuser.
 
   PostgresPassword:
     Description: Password for the Postgres database user
+    Type: String
+    NoEcho: true
+
+  PostgresSuperuserPassword:
+    Description: Password for the Postgres superuser (postgres)
     Type: String
     NoEcho: true
 
@@ -249,6 +256,16 @@ Resources:
       SecretString: !Sub '{
         "username": "${PostgresUsername}",
         "password": "${PostgresPassword}"
+      }'
+
+  PostgresSuperuserSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Postgres superuser credentials
+      Name: PostgresSuperuser
+      SecretString: !Sub '{
+        "username": "postgres",
+        "password": "${PostgresSuperuserPassword}"
       }'
 
   # ECR repositories
