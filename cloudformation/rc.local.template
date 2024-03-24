@@ -75,6 +75,7 @@ install_application () {
   # Pull Docker images
   aws ecr get-login-password --region $REGION | \
     docker login --username AWS --password-stdin $DOCKER_REGISTRY
+  docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_PROD pull
 }
 
 create_postgres_superuser_secret() {
