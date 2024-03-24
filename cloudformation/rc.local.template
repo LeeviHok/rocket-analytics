@@ -10,6 +10,8 @@ main () {
   DB_VOLUME_ID=$(get_ssm_parameter "DatabaseVolumeId")
   GIT_REPOSITORY=$(get_ssm_parameter "GitRepository")
   GIT_BRANCH=$(get_ssm_parameter "GitBranch")
+  POSTGRES_DATABASE=$(get_ssm_parameter "PostgresDatabase")
+  DOCKER_REGISTRY=$(get_ssm_parameter "DockerRegistry")
 
   GIT_REPOSITORY_PATH=/home/ubuntu/rocket-analytics
   COMPOSE_FILE="${GIT_REPOSITORY_PATH}/docker-compose.yml"
@@ -18,6 +20,7 @@ main () {
 
   # Install and start the application
   install_application
+  create_postgres_superuser_secret
   docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_PROD up -d --no-build
 
   # This script needs to be executed only once when server is created
@@ -54,23 +57,15 @@ install_docker () {
 install_application () {
   # Install software packages
   DEBIAN_FRONTEND=noninteractive apt-get -y update
-  DEBIAN_FRONTEND=noninteractive apt-get -y install git
+  DEBIAN_FRONTEND=noninteractive apt-get -y install git jq
   install_docker
 
   # Clone git repository to get Docker Compose file
   git clone $GIT_REPOSITORY $GIT_REPOSITORY_PATH
   git -C $GIT_REPOSITORY_PATH checkout $GIT_BRANCH
 
-  # Fetch environment variables for Docker Compose
-  POSTGRES_USERNAME=$(get_ssm_parameter "PostgresUsername")
-  POSTGRES_PASSWORD=$(get_ssm_parameter "PostgresPassword")
-  POSTGRES_DATABASE=$(get_ssm_parameter "PostgresDatabase")
-  DOCKER_REGISTRY=$(get_ssm_parameter "DockerRegistry")
-
   # Create and populate '.env' file for Docker Compose
   touch $ENV_FILE && chmod 600 $ENV_FILE
-  echo "POSTGRES_USERNAME=$POSTGRES_USERNAME" | tee -a $ENV_FILE
-  echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" | tee -a $ENV_FILE
   echo "POSTGRES_DATABASE=$POSTGRES_DATABASE" | tee -a $ENV_FILE
   echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" | tee -a $ENV_FILE
   echo "AWS_REGION=$REGION" | tee -a $ENV_FILE
@@ -80,7 +75,36 @@ install_application () {
   # Pull Docker images
   aws ecr get-login-password --region $REGION | \
     docker login --username AWS --password-stdin $DOCKER_REGISTRY
-  docker compose -f $COMPOSE_FILE pull
+}
+
+create_postgres_superuser_secret() {
+  # Disable trace so that secrets don't show up in log files
+  set +x
+
+  local postgres_superuser_secret
+  local username
+  local password
+  local postgres_username_file
+  local postgres_password_file
+
+  postgres_superuser_secret=$(aws secretsmanager get-secret-value \
+    --secret-id PostgresSuperuser --region $REGION --query SecretString \
+    --output text)
+
+  username=$(echo $postgres_superuser_secret | jq -r .username)
+  password=$(echo $postgres_superuser_secret | jq -r .password)
+
+  postgres_username_file="${GIT_REPOSITORY_PATH}/postgres_username.txt"
+  postgres_password_file="${GIT_REPOSITORY_PATH}/postgres_password.txt"
+
+  touch $postgres_username_file && chmod 600 $postgres_username_file
+  touch $postgres_password_file && chmod 600 $postgres_password_file
+
+  echo $username > $postgres_username_file
+  echo $password > $postgres_password_file
+
+  # Secret stuff is done, trace can be enabled
+  set -x
 }
 
 get_db_volume_name () {

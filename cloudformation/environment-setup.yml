@@ -210,26 +210,6 @@ Resources:
       Type: String
       Value: !GetAtt DatabaseVolume.VolumeId
 
-  PostgresUsernameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      DataType: text
-      Description: Postgres username
-      Name: PostgresUsername
-      Tier: Standard
-      Type: String
-      Value: !Ref PostgresUsername
-
-  PostgresPasswordParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      DataType: text
-      Description: Postgres password
-      Name: PostgresPassword
-      Tier: Standard
-      Type: String
-      Value: !Ref PostgresPassword
-
   PostgresDatabaseParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -259,6 +239,16 @@ Resources:
       SecretString: !Sub '{
         "email": "${AdminUserEmail}",
         "password": "${AdminUserPassword}"
+      }'
+
+  PostgresUserSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Postgres database user credentials
+      Name: PostgresUser
+      SecretString: !Sub '{
+        "username": "${PostgresUsername}",
+        "password": "${PostgresPassword}"
       }'
 
   # ECR repositories
